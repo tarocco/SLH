@@ -1,3 +1,6 @@
 .env
 .vs
 obj
+bin
+Sandbox
+*.user
