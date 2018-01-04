@@ -153,7 +153,7 @@ namespace SLHBot
                     }
                 });
 
-                Console.WriteLine($"Running standlone http server on {prefix}");
+                Console.WriteLine($"Running standalone http server on {prefix}");
             }
 
             #endregion Standalone
