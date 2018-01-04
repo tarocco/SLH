@@ -9,9 +9,11 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using static System.String;
+using System.IO;
 
 namespace SLHBot
 {
+    using static SLHBot.JSONUtility;
     internal class CommandLineArgumentsException : Exception
     {
     }
@@ -25,13 +27,11 @@ namespace SLHBot
             FailReason = fail_reason;
         }
     }
-
     internal class Program
     {
         public static readonly string Product;
         public static readonly string Version;
         public static readonly string[] SupportedMessageProtocols;
-
         static Program()
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -59,21 +59,47 @@ namespace SLHBot
             //    return;
             //}
 
-            var login_uri = arguments["login-uri"];
+            string
+                first_name,
+                last_name,
+                password,
+                login_uri,
+                start_location,
+                ws_location,
+                ws_cert_path,
+                ws_cert_password;
+
+            string config_file_path = arguments["config-file"];
+            if(!IsNullOrEmpty(config_file_path))
+            {
+                var config_file_text = File.ReadAllText(config_file_path);
+                var config = JsonMapper.ToObject(config_file_text);
+                config.TryGetValue("FirstName", out first_name);
+                config.TryGetValue("LastName", out last_name);
+                config.TryGetValue("Password", out password);
+                config.TryGetValue("LoginURI", out login_uri);
+                config.TryGetValue("StartLocation", out start_location);
+                config.TryGetValue("WebSocketLocation", out ws_location);
+                config.TryGetValue("WebSocketCertificatePath", out ws_cert_path);
+                config.TryGetValue("WebSocketCertificatePassword", out ws_cert_password);
+            }
+            else
+            {
+                first_name = arguments["first"];
+                last_name = arguments["last"];
+                password = arguments["pass"];
+                login_uri = arguments["login-uri"];
+                start_location = arguments["start-location"];
+                ws_location = arguments["ws"];
+                ws_cert_path = arguments["ws-cert-path"];
+                ws_cert_password = arguments["ws-cert-pass"];
+            }
+
             if (IsNullOrEmpty(login_uri))
                 login_uri = Settings.AGNI_LOGIN_SERVER;
 
-            var start_location = arguments["start-location"];
-
-            Logger.Log("Using login URI " + login_uri, Helpers.LogLevel.Info);
-
-            var first_name = arguments["first"];
-            var last_name = arguments["last"];
-            var password = arguments["pass"];
-
-            var ws_location = arguments["ws"];
-            var ws_cert_path = arguments["ws-cert-path"];
-            var ws_cert_password = arguments["ws-cert-pass"];
+            if (IsNullOrEmpty(first_name))
+                throw new ArgumentException("First name must be specified");
 
             // Legacy fix
             if (IsNullOrEmpty(last_name))
@@ -84,9 +110,6 @@ namespace SLHBot
                 Console.Write($"Password for {first_name} {last_name}: ");
                 password = GetPassword();
             }
-
-            if (IsNullOrEmpty(first_name))
-                throw new ArgumentException("First name must be specified");
 
             if (IsNullOrEmpty(ws_location))
             {
