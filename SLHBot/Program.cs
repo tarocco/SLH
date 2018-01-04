@@ -5,19 +5,16 @@ using OpenMetaverse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using System.Threading.Tasks;
 using static System.String;
-using System.IO;
 
 namespace SLHBot
 {
-    using static SLHBot.JSONUtility;
-    internal class CommandLineArgumentsException : Exception
-    {
-    }
-
     internal class LoginFailedException : Exception
     {
         public readonly string FailReason;
@@ -27,11 +24,13 @@ namespace SLHBot
             FailReason = fail_reason;
         }
     }
+
     internal class Program
     {
         public static readonly string Product;
         public static readonly string Version;
         public static readonly string[] SupportedMessageProtocols;
+
         static Program()
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -50,6 +49,8 @@ namespace SLHBot
                 shutting_down = true;
             };
 
+            #region Arguments
+
             var arguments = new Arguments(args);
 
             // TODO
@@ -67,10 +68,11 @@ namespace SLHBot
                 start_location,
                 ws_location,
                 ws_cert_path,
-                ws_cert_password;
+                ws_cert_password,
+                standalone_binding_address;
 
-            string config_file_path = arguments["config-file"];
-            if(!IsNullOrEmpty(config_file_path))
+            var config_file_path = arguments["config-file"];
+            if (!IsNullOrEmpty(config_file_path))
             {
                 var config_file_text = File.ReadAllText(config_file_path);
                 var config = JsonMapper.ToObject(config_file_text);
@@ -82,6 +84,7 @@ namespace SLHBot
                 config.TryGetValue("WebSocketLocation", out ws_location);
                 config.TryGetValue("WebSocketCertificatePath", out ws_cert_path);
                 config.TryGetValue("WebSocketCertificatePassword", out ws_cert_password);
+                config.TryGetValue("StandaloneWebUIBindingAddress", out standalone_binding_address);
             }
             else
             {
@@ -93,7 +96,12 @@ namespace SLHBot
                 ws_location = arguments["ws"];
                 ws_cert_path = arguments["ws-cert-path"];
                 ws_cert_password = arguments["ws-cert-pass"];
+                standalone_binding_address = arguments["standalone-web-ui-binding-address"];
             }
+
+            #endregion Arguments
+
+
 
             if (IsNullOrEmpty(login_uri))
                 login_uri = Settings.AGNI_LOGIN_SERVER;
@@ -101,37 +109,56 @@ namespace SLHBot
             if (IsNullOrEmpty(first_name))
                 throw new ArgumentException("First name must be specified");
 
-            // Legacy fix
-            if (IsNullOrEmpty(last_name))
-                last_name = "Resident";
+            #region Standalone
 
-            if (IsNullOrEmpty(password))
+            if (!IsNullOrEmpty(standalone_binding_address))
             {
-                Console.Write($"Password for {first_name} {last_name}: ");
-                password = GetPassword();
-            }
-
-            if (IsNullOrEmpty(ws_location))
-            {
-                if (IsNullOrEmpty(ws_cert_path))
-                    ws_location = "ws://127.0.0.1:5756";
-                else
-                    ws_location = "wss://127.0.0.1:5756";
-            }
-
-            var all_sockets = new List<IWebSocketConnection>();
-            var server = new WebSocketServer(ws_location);
-
-            if (ws_location.ToLower().StartsWith("wss://"))
-            {
-                if (!IsNullOrEmpty(ws_cert_path))
+                // KISS HTTP server
+                var listener = new HttpListener();
+                var prefix = $"http://{standalone_binding_address}/";
+                listener.Prefixes.Add(prefix);
+                Task.Run(async () =>
                 {
-                    if (IsNullOrEmpty(ws_cert_password))
-                        server.Certificate = new X509Certificate2(ws_cert_path);
-                    else
-                        server.Certificate = new X509Certificate2(ws_cert_path, ws_cert_password);
-                }
+                    listener.Start();
+                    for (; ; )
+                    {
+                        var context = await listener.GetContextAsync();
+                        string response;
+                        HttpStatusCode http_status_code;
+                        try
+                        {
+                            var request_path = context.Request.RawUrl.TrimStart('/');
+                            var root = new Uri(Directory.GetCurrentDirectory() + "/html/");
+                            var file_path_uri = new Uri(root, request_path);
+                            if (!root.IsBaseOf(file_path_uri))
+                                throw new Exception("Bad file path URI");
+                            if (file_path_uri.AbsolutePath.EndsWith("/"))
+                                file_path_uri = new Uri(file_path_uri, "index.html");
+                            using (var reader = new StreamReader(file_path_uri.AbsolutePath))
+                                response = reader.ReadToEnd();
+                            http_status_code = HttpStatusCode.OK;
+                        }
+                        catch (Exception ex)
+                        {
+                            response = $"{ex.Message}\r\n{ex.StackTrace}";
+                            http_status_code = HttpStatusCode.InternalServerError;
+                        }
+
+                        context.Response.StatusCode = (int)http_status_code;
+                        using (var writer = new StreamWriter(context.Response.OutputStream))
+                        {
+                            await writer.WriteAsync(response);
+                            await writer.FlushAsync();
+                        }
+                    }
+                });
+
+                Console.WriteLine($"Running standlone http server on {prefix}");
             }
+
+            #endregion Standalone
+
+            #region SLHClient
 
             var client = new SLHClient
             {
@@ -158,6 +185,16 @@ namespace SLHBot
                 logged_out = true;
             };
 
+            // Legacy fix
+            if (IsNullOrEmpty(last_name))
+                last_name = "Resident";
+
+            if (IsNullOrEmpty(password))
+            {
+                Console.Write($"Password for {first_name} {last_name}: ");
+                password = GetPassword();
+            }
+
             var login_params = client.Network.DefaultLoginParams(first_name, last_name, password, Product, Version);
 
             if (!IsNullOrEmpty(start_location))
@@ -173,6 +210,32 @@ namespace SLHBot
                 if (login_status == LoginStatus.Failed)
                     throw new LoginFailedException(login_fail_reason);
                 Thread.Sleep(200);
+            }
+
+            #endregion SLHClient
+
+            #region WebSockets
+
+            var all_sockets = new List<IWebSocketConnection>();
+            var server = new WebSocketServer(ws_location);
+
+            if (IsNullOrEmpty(ws_location))
+            {
+                if (IsNullOrEmpty(ws_cert_path))
+                    ws_location = "ws://127.0.0.1:5756";
+                else
+                    ws_location = "wss://127.0.0.1:5756";
+            }
+
+            if (ws_location.ToLower().StartsWith("wss://"))
+            {
+                if (!IsNullOrEmpty(ws_cert_path))
+                {
+                    if (IsNullOrEmpty(ws_cert_password))
+                        server.Certificate = new X509Certificate2(ws_cert_path);
+                    else
+                        server.Certificate = new X509Certificate2(ws_cert_path, ws_cert_password);
+                }
             }
 
             server.SupportedSubProtocols = SupportedMessageProtocols;
@@ -219,6 +282,10 @@ namespace SLHBot
                 };
             });
 
+            #endregion WebSockets
+
+            #region Main Loop
+
             while (!logged_out)
             {
                 if (message_queue.TryDequeue(out JsonData message_body))
@@ -236,6 +303,8 @@ namespace SLHBot
                     client.Network.Logout();
                 Thread.Sleep(50);
             }
+
+            #endregion Main Loop
         }
 
         public static string GetPassword()
