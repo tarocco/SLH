@@ -6,12 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using System.Threading.Tasks;
 using static System.String;
+using static SLHBot.Utility;
 
 namespace SLHBot
 {
@@ -29,7 +28,6 @@ namespace SLHBot
     {
         public static readonly string Product;
         public static readonly string Version;
-        public static readonly string[] SupportedMessageProtocols;
 
         static Program()
         {
@@ -37,7 +35,6 @@ namespace SLHBot
             var file_version_info = FileVersionInfo.GetVersionInfo(assembly.Location);
             Product = file_version_info.ProductName;
             Version = file_version_info.ProductVersion;
-            SupportedMessageProtocols = new[] { "SLH-Message-Protocol-0001" };
         }
 
         private static void Main(string[] args)
@@ -99,9 +96,28 @@ namespace SLHBot
                 standalone_binding_address = arguments["standalone-web-ui-binding-address"];
             }
 
+            if (IsNullOrEmpty(ws_location))
+            {
+                if (IsNullOrEmpty(ws_cert_path))
+                    ws_location = "ws://127.0.0.1:5756";
+                else
+                    ws_location = "wss://127.0.0.1:5756";
+            }
+
+            X509Certificate2 certificate = null;
+
+            if (ws_location.ToLower().StartsWith("wss://"))
+            {
+                if (!IsNullOrEmpty(ws_cert_path))
+                {
+                    if (IsNullOrEmpty(ws_cert_password))
+                        certificate = new X509Certificate2(ws_cert_path);
+                    else
+                        certificate = new X509Certificate2(ws_cert_path, ws_cert_password);
+                }
+            }
+
             #endregion Arguments
-
-
 
             if (IsNullOrEmpty(login_uri))
                 login_uri = Settings.AGNI_LOGIN_SERVER;
@@ -113,47 +129,8 @@ namespace SLHBot
 
             if (!IsNullOrEmpty(standalone_binding_address))
             {
-                // KISS HTTP server
-                var listener = new HttpListener();
-                var prefix = $"http://{standalone_binding_address}/";
-                listener.Prefixes.Add(prefix);
-                Task.Run(async () =>
-                {
-                    listener.Start();
-                    for (; ; )
-                    {
-                        var context = await listener.GetContextAsync();
-                        string response;
-                        HttpStatusCode http_status_code;
-                        try
-                        {
-                            var request_path = context.Request.RawUrl.TrimStart('/');
-                            var root = new Uri(Directory.GetCurrentDirectory() + "/html/");
-                            var file_path_uri = new Uri(root, request_path);
-                            if (!root.IsBaseOf(file_path_uri))
-                                throw new Exception("Bad file path URI");
-                            if (file_path_uri.AbsolutePath.EndsWith("/"))
-                                file_path_uri = new Uri(file_path_uri, "index.html");
-                            using (var reader = new StreamReader(file_path_uri.AbsolutePath))
-                                response = reader.ReadToEnd();
-                            http_status_code = HttpStatusCode.OK;
-                        }
-                        catch (Exception ex)
-                        {
-                            response = $"{ex.Message}\r\n{ex.StackTrace}";
-                            http_status_code = HttpStatusCode.InternalServerError;
-                        }
-
-                        context.Response.StatusCode = (int)http_status_code;
-                        using (var writer = new StreamWriter(context.Response.OutputStream))
-                        {
-                            await writer.WriteAsync(response);
-                            await writer.FlushAsync();
-                        }
-                    }
-                });
-
-                Console.WriteLine($"Running standalone http server on {prefix}");
+                var standalone = new Standalone();
+                standalone.Run(standalone_binding_address);
             }
 
             #endregion Standalone
@@ -216,121 +193,39 @@ namespace SLHBot
 
             #region WebSockets
 
-            var all_sockets = new List<IWebSocketConnection>();
-            var server = new WebSocketServer(ws_location);
-
-            if (IsNullOrEmpty(ws_location))
+            var server = new SLHWebSocketServer(ws_location)
             {
-                if (IsNullOrEmpty(ws_cert_path))
-                    ws_location = "ws://127.0.0.1:5756";
-                else
-                    ws_location = "wss://127.0.0.1:5756";
-            }
+                Certificate = certificate
+            };
 
-            if (ws_location.ToLower().StartsWith("wss://"))
-            {
-                if (!IsNullOrEmpty(ws_cert_path))
-                {
-                    if (IsNullOrEmpty(ws_cert_password))
-                        server.Certificate = new X509Certificate2(ws_cert_path);
-                    else
-                        server.Certificate = new X509Certificate2(ws_cert_path, ws_cert_password);
-                }
-            }
+            server.Start();
 
-            server.SupportedSubProtocols = SupportedMessageProtocols;
-            var message_queue = new LocklessQueue<JsonData>();
-
-            server.Start(socket =>
-            {
-                socket.OnOpen += () =>
-                {
-                    all_sockets.Add(socket);
-                };
-
-                socket.OnClose += () =>
-                {
-                    all_sockets.Remove(socket);
-                };
-
-                socket.OnMessage += message =>
-                {
-                    try
-                    {
-                        JsonData data;
-                        try
-                        {
-                            data = JsonMapper.ToObject(message);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new ArgumentException("Failed to parse JSON message.", ex);
-                        }
-                        try
-                        {
-                            message_queue.Enqueue(data);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new ArgumentException("Could not enqueue message.", ex);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log(ex.Message, Helpers.LogLevel.Error);
-                    }
-                };
-            });
+            Console.WriteLine($"Running SLH WebSockets server on {ws_location}");
 
             #endregion WebSockets
 
             #region Main Loop
 
+            server.ReceivedJSONMessage += (sender, e) =>
+            {
+                try
+                {
+                    client.ProcessMessage(e.Message);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Failed to process message.", Helpers.LogLevel.Error, ex);
+                }
+            };
+
             while (!logged_out)
             {
-                if (message_queue.TryDequeue(out JsonData message_body))
-                {
-                    try
-                    {
-                        client.ProcessMessage(message_body);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log("Failed to process message.", Helpers.LogLevel.Error, ex);
-                    }
-                }
                 if (shutting_down)
                     client.Network.Logout();
-                Thread.Sleep(50);
+                Thread.Sleep(100);
             }
 
             #endregion Main Loop
-        }
-
-        public static string GetPassword()
-        {
-            var password = "";
-            while (true)
-            {
-                var i = Console.ReadKey(true);
-                if (i.Key == ConsoleKey.Enter)
-                {
-                    Console.WriteLine();
-                    break;
-                }
-                if (i.Key == ConsoleKey.Backspace)
-                {
-                    if (password.Length > 0)
-                    {
-                        password.Remove(password.Length - 1);
-                    }
-                }
-                else
-                {
-                    password += i.KeyChar;
-                }
-            }
-            return password;
         }
     }
 }
