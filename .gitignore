@@ -6,5 +6,5 @@ Sandbox
 
 # Git makes this more complicated than I would like
 */bin/**
-!SLHBot/bin/**/
-!SLHBot/bin/**/html/*
+!SLHBot/bin/*/
+!SLHBot/bin/*/html/*
