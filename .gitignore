@@ -1,6 +1,10 @@
 .env
 .vs
 obj
-bin
 Sandbox
 *.user
+
+# Git makes this more complicated than I would like
+*/bin/**
+!SLHBot/bin/**/
+!SLHBot/bin/**/html/*
