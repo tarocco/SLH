@@ -1,16 +1,15 @@
 ﻿using CommandLine.Utility;
-using Fleck;
 using LitJson;
 using OpenMetaverse;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using static System.String;
 using static SLHBot.Utility;
+using static System.String;
 
 namespace SLHBot
 {
@@ -68,6 +67,8 @@ namespace SLHBot
                 ws_cert_password,
                 standalone_binding_address;
 
+            bool dummy_session;
+
             var config_file_path = arguments["config-file"];
             if (!IsNullOrEmpty(config_file_path))
             {
@@ -82,6 +83,7 @@ namespace SLHBot
                 config.TryGetValue("WebSocketCertificatePath", out ws_cert_path);
                 config.TryGetValue("WebSocketCertificatePassword", out ws_cert_password);
                 config.TryGetValue("StandaloneWebUIBindingAddress", out standalone_binding_address);
+                config.TryGetValue("DummySession", out dummy_session);
             }
             else
             {
@@ -94,6 +96,7 @@ namespace SLHBot
                 ws_cert_path = arguments["ws-cert-path"];
                 ws_cert_password = arguments["ws-cert-pass"];
                 standalone_binding_address = arguments["standalone-web-ui-binding-address"];
+                bool.TryParse(arguments["dummy-session"], out dummy_session);
             }
 
             if (IsNullOrEmpty(ws_location))
@@ -137,56 +140,63 @@ namespace SLHBot
 
             #region SLHClient
 
-            var client = new SLHClient
-            {
-                Throttle =
-                {
-                    Wind = 0,
-                    Cloud = 0,
-                    Land = 1000000,
-                    Task = 1000000,
-                }
-            };
-
-            var login_status = LoginStatus.None;
-            string login_fail_reason = null;
-            client.Network.LoginProgress += (sender, e) =>
-            {
-                login_status = e.Status;
-                login_fail_reason = e.FailReason;
-            };
-
+            SLHClient client = null;
             var logged_out = false;
-            client.Network.LoggedOut += (sender, e) =>
+
+            if (dummy_session)
+                Logger.Log("Using dummy session mode without SLHClient.", Helpers.LogLevel.Warning);
+            else
             {
-                logged_out = true;
-            };
+                client = new SLHClient
+                {
+                    Throttle =
+                    {
+                        Wind = 0,
+                        Cloud = 0,
+                        Land = 1000000,
+                        Task = 1000000,
+                    }
+                };
 
-            // Legacy fix
-            if (IsNullOrEmpty(last_name))
-                last_name = "Resident";
+                var login_status = LoginStatus.None;
+                string login_fail_reason = null;
+                client.Network.LoginProgress += (sender, e) =>
+                {
+                    login_status = e.Status;
+                    login_fail_reason = e.FailReason;
+                };
 
-            if (IsNullOrEmpty(password))
-            {
-                Console.Write($"Password for {first_name} {last_name}: ");
-                password = GetPassword();
-            }
+                client.Network.LoggedOut += (sender, e) =>
+                {
+                    logged_out = true;
+                };
 
-            var login_params = client.Network.DefaultLoginParams(first_name, last_name, password, Product, Version);
+                // Legacy fix
+                if (IsNullOrEmpty(last_name))
+                    last_name = "Resident";
 
-            if (!IsNullOrEmpty(start_location))
-                login_params.Start = start_location;
+                if (IsNullOrEmpty(password))
+                {
+                    Console.Write($"Password for {first_name} {last_name}: ");
+                    password = GetPassword();
+                }
 
-            if (!IsNullOrEmpty(login_uri))
-                login_params.URI = login_uri;
+                var login_params = client.Network.DefaultLoginParams(first_name, last_name, password, Product, Version);
 
-            client.Network.BeginLogin(login_params);
+                if (!IsNullOrEmpty(start_location))
+                    login_params.Start = start_location;
 
-            while (login_status != LoginStatus.Success)
-            {
-                if (login_status == LoginStatus.Failed)
-                    throw new LoginFailedException(login_fail_reason);
-                Thread.Sleep(200);
+                if (!IsNullOrEmpty(login_uri))
+                    login_params.URI = login_uri;
+
+                client.Network.BeginLogin(login_params);
+
+                while (login_status != LoginStatus.Success)
+                {
+                    if (login_status == LoginStatus.Failed)
+                        throw new LoginFailedException(login_fail_reason);
+                    Thread.Sleep(200);
+                }
             }
 
             #endregion SLHClient
@@ -198,11 +208,97 @@ namespace SLHBot
                 Certificate = certificate
             };
 
-            server.Start();
-
-            Console.WriteLine($"Running SLH WebSockets server on {ws_location}");
+            server.Start(); ;
 
             #endregion WebSockets
+
+            #region SLHClient <==> WebSockets
+
+            client.Self.ChatFromSimulator += (sender, e) =>
+            {
+                switch(e.Type)
+                {
+                    default:
+                        var json_data = new JsonData
+                        {
+                            ["_event"] = "ChatFromSimulator",
+                            ["AudibleLevel"] = (int)e.AudibleLevel,
+                            ["FromName"] = e.FromName,
+                            ["Message"] = e.Message,
+                            ["OwnerID"] = e.OwnerID.ToString(),
+                            ["Position"] = e.Position.ToString(),
+                            ["Simulator"] = new JsonData
+                            {
+                                ["Name"] = e.Simulator.Name,
+                                ["Handle"] = e.Simulator.Handle
+                            },
+                            ["SourceType"] = (int)e.SourceType,
+                            ["Type"] = (int)e.Type
+                        };
+                        server.BroadcastMessage(json_data);
+                        break;
+                    case ChatType.StartTyping:
+                    case ChatType.StopTyping:
+                        break;
+                }
+            };
+
+            client.Avatars.ViewerEffect += (sender, e) =>
+            {
+                var json_data = new JsonData
+                {
+                    ["_event"] = "ViewerEffect",
+                    ["Duration"] = e.Duration,
+                    ["EffectId"] = e.EffectID.ToString(),
+                    ["SourceId"] = e.SourceID.ToString(),
+                    ["TargetID"] = e.TargetID.ToString(),
+                    ["TargetPosition"] = e.TargetPosition.ToString(),
+                    ["Type"] = (int)e.Type
+                };
+                server.BroadcastMessage(json_data);
+            };
+
+            client.GetObjectNearestPoint += (sender, e) =>
+            {
+                var json_data = new JsonData()
+                {
+                    ["_event"] = "GetObjectNearestPoint",
+                    ["Simulator"] = new JsonData()
+                    {
+                        ["Handle"] = e.Simulator.Handle,
+                        ["Name"] = e.Simulator.Name
+                    },
+                    ["Object"] = new JsonData()
+                    {
+                        ["LocalID"] = e.Prim.LocalID
+                    }
+                };
+            };
+
+            client.DebugObject += (sender, e) =>
+            {
+                var primitive = client.Objects.GetPrimitive(e.Simulator, e.LocalID, UUID.Zero, false);
+                if(primitive != null)
+                {
+                    var face_textures = primitive.Textures.FaceTextures;
+                    var diffuse = face_textures
+                        .Select(f => f.TextureID)
+                        .Select(t => t.ToString());
+
+                    var json_data = new JsonData
+                    {
+                        ["_event"] = "DebugObject",
+                        ["Textures"] = new JsonData
+                        {
+                            ["Diffuse"] = JsonMapper.ToJson(diffuse)
+                        }
+                    };
+
+                    server.BroadcastMessage(json_data);
+                }
+            };
+
+            #endregion SLHClient <==> WebSockets
 
             #region Main Loop
 
@@ -210,7 +306,10 @@ namespace SLHBot
             {
                 try
                 {
-                    client.ProcessMessage(e.Message);
+                    if (dummy_session)
+                        Logger.Log(e.Message.ToJson(), Helpers.LogLevel.Info);
+                    else
+                        client.ProcessMessage(e.Message);
                 }
                 catch (Exception ex)
                 {
@@ -221,7 +320,7 @@ namespace SLHBot
             while (!logged_out)
             {
                 if (shutting_down)
-                    client.Network.Logout();
+                    client.Network?.Logout();
                 Thread.Sleep(100);
             }
 

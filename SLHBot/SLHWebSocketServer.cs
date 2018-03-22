@@ -104,5 +104,13 @@ namespace SLHBot
         {
             Server.Start(Config);
         }
+
+        public void BroadcastMessage(JsonData data)
+        {
+            foreach(var socket in Sockets)
+            {
+                socket.Send(data.ToJson());
+            }
+        }
     }
 }
