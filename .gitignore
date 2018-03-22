@@ -3,6 +3,7 @@
 obj
 Sandbox
 *.user
+*.suo
 
 # Git makes this more complicated than I would like
 */bin/**
