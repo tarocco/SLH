@@ -36,6 +36,29 @@ namespace SLHBot
             Version = file_version_info.ProductVersion;
         }
 
+        private static bool TryArg(JsonData config, Arguments args, string config_name, string arg_name, out string value)
+        {
+            if (config != null && config.TryGetValue(config_name, out value))
+                return true;
+            if (args != null)
+            {
+                value = args[arg_name];
+                return value != null;
+            }
+            value = default(string);
+            return false;
+        }
+
+        private static bool TryArg(JsonData config, Arguments args, string config_name, string arg_name, out bool value)
+        {
+            if (config != null && config.TryGetValue(config_name, out value))
+                return true;
+            if (args != null && bool.TryParse(args[arg_name], out value))
+                return true;
+            value = default(bool);
+            return false;
+        }
+
         private static void Main(string[] args)
         {
             var shutting_down = false;
@@ -56,48 +79,38 @@ namespace SLHBot
             //    return;
             //}
 
-            string
-                first_name,
-                last_name,
-                password,
-                login_uri,
-                start_location,
-                ws_location,
-                ws_cert_path,
-                ws_cert_password,
-                standalone_binding_address;
-
-            bool dummy_session;
-
             var config_file_path = arguments["config-file"];
+            var config_arg_text = arguments["config"];
+            string config_file_text = null;
+
             if (!IsNullOrEmpty(config_file_path))
+                config_file_text = File.ReadAllText(config_file_path);
+
+            JsonData config = new JsonData();
+            JsonData websocket_config, websocket_cert_config;
+            if (!IsNullOrEmpty(config_file_text))
+                config = JsonMapper.ToObject(config_file_text);
+
+            if (!IsNullOrEmpty(config_arg_text))
             {
-                var config_file_text = File.ReadAllText(config_file_path);
-                var config = JsonMapper.ToObject(config_file_text);
-                config.TryGetValue("FirstName", out first_name);
-                config.TryGetValue("LastName", out last_name);
-                config.TryGetValue("Password", out password);
-                config.TryGetValue("LoginURI", out login_uri);
-                config.TryGetValue("StartLocation", out start_location);
-                config.TryGetValue("WebSocketLocation", out ws_location);
-                config.TryGetValue("WebSocketCertificatePath", out ws_cert_path);
-                config.TryGetValue("WebSocketCertificatePassword", out ws_cert_password);
-                config.TryGetValue("StandaloneWebUIBindingAddress", out standalone_binding_address);
-                config.TryGetValue("DummySession", out dummy_session);
+                var arg_config = JsonMapper.ToObject(config_arg_text);
+                foreach (var key in arg_config.Keys)
+                    config[key] = arg_config[key];
             }
-            else
-            {
-                first_name = arguments["first"];
-                last_name = arguments["last"];
-                password = arguments["pass"];
-                login_uri = arguments["login-uri"];
-                start_location = arguments["start-location"];
-                ws_location = arguments["ws"];
-                ws_cert_path = arguments["ws-cert-path"];
-                ws_cert_password = arguments["ws-cert-pass"];
-                standalone_binding_address = arguments["standalone-web-ui-binding-address"];
-                bool.TryParse(arguments["dummy-session"], out dummy_session);
-            }
+
+            config.TryGetValue("WebSocket", out websocket_config);
+            websocket_config.TryGetValue("Certificate", out websocket_cert_config);
+
+            TryArg(config, arguments, "FirstName", "first", out string first_name);
+            TryArg(config, arguments, "LastName", "last", out string last_name);
+            TryArg(config, arguments, "Password", "pass", out string password);
+            TryArg(config, arguments, "LoginURI", "login-uri", out string login_uri);
+            TryArg(config, arguments, "StartLocation", "start-location", out string start_location);
+            TryArg(websocket_config, arguments, "Location", "ws", out string ws_location);
+            TryArg(websocket_cert_config, arguments, "Path", "ws-cert-path", out string ws_cert_path);
+            TryArg(websocket_cert_config, arguments, "Password", "ws-cert-pass", out string ws_cert_password);
+            TryArg(config, arguments, "StandaloneAddress", "standalone-address", out string standalone_binding_address);
+            TryArg(config, arguments, "DummySession", "dummy-session", out bool dummy_session);
 
             if (IsNullOrEmpty(ws_location))
             {
@@ -144,7 +157,7 @@ namespace SLHBot
             var logged_out = false;
 
             if (dummy_session)
-                Logger.Log("Using dummy session mode without SLHClient.", Helpers.LogLevel.Warning);
+                Logger.Log("Using dummy session mode without Second Life client.", Helpers.LogLevel.Warning);
             else
             {
                 client = new SLHClient
@@ -214,89 +227,93 @@ namespace SLHBot
 
             #region SLHClient <==> WebSockets
 
-            client.Self.ChatFromSimulator += (sender, e) =>
+            if (client != null)
             {
-                switch(e.Type)
+                client.Self.ChatFromSimulator += (sender, e) =>
                 {
-                    default:
-                        var json_data = new JsonData
-                        {
-                            ["_event"] = "ChatFromSimulator",
-                            ["AudibleLevel"] = (int)e.AudibleLevel,
-                            ["FromName"] = e.FromName,
-                            ["Message"] = e.Message,
-                            ["OwnerID"] = e.OwnerID.ToString(),
-                            ["Position"] = e.Position.ToString(),
-                            ["Simulator"] = new JsonData
+                    switch (e.Type)
+                    {
+                        default:
+                            var json_data = new JsonData
                             {
-                                ["Name"] = e.Simulator.Name,
-                                ["Handle"] = e.Simulator.Handle
-                            },
-                            ["SourceType"] = (int)e.SourceType,
-                            ["Type"] = (int)e.Type
-                        };
-                        server.BroadcastMessage(json_data);
-                        break;
-                    case ChatType.StartTyping:
-                    case ChatType.StopTyping:
-                        break;
-                }
-            };
+                                ["_event"] = "ChatFromSimulator",
+                                ["AudibleLevel"] = (int)e.AudibleLevel,
+                                ["FromName"] = e.FromName,
+                                ["Message"] = e.Message,
+                                ["OwnerID"] = e.OwnerID.ToString(),
+                                ["Position"] = e.Position.ToString(),
+                                ["Simulator"] = new JsonData
+                                {
+                                    ["Name"] = e.Simulator.Name,
+                                    ["Handle"] = e.Simulator.Handle
+                                },
+                                ["SourceType"] = (int)e.SourceType,
+                                ["Type"] = (int)e.Type
+                            };
+                            server.BroadcastMessage(json_data);
+                            break;
 
-            client.Avatars.ViewerEffect += (sender, e) =>
-            {
-                var json_data = new JsonData
-                {
-                    ["_event"] = "ViewerEffect",
-                    ["Duration"] = e.Duration,
-                    ["EffectId"] = e.EffectID.ToString(),
-                    ["SourceId"] = e.SourceID.ToString(),
-                    ["TargetID"] = e.TargetID.ToString(),
-                    ["TargetPosition"] = e.TargetPosition.ToString(),
-                    ["Type"] = (int)e.Type
-                };
-                server.BroadcastMessage(json_data);
-            };
-
-            client.GetObjectNearestPoint += (sender, e) =>
-            {
-                var json_data = new JsonData()
-                {
-                    ["_event"] = "GetObjectNearestPoint",
-                    ["Simulator"] = new JsonData()
-                    {
-                        ["Handle"] = e.Simulator.Handle,
-                        ["Name"] = e.Simulator.Name
-                    },
-                    ["Object"] = new JsonData()
-                    {
-                        ["LocalID"] = e.Prim.LocalID
+                        case ChatType.StartTyping:
+                        case ChatType.StopTyping:
+                            break;
                     }
                 };
-            };
 
-            client.DebugObject += (sender, e) =>
-            {
-                var primitive = client.Objects.GetPrimitive(e.Simulator, e.LocalID, UUID.Zero, false);
-                if(primitive != null)
+                client.Avatars.ViewerEffect += (sender, e) =>
                 {
-                    var face_textures = primitive.Textures.FaceTextures;
-                    var diffuse = face_textures
-                        .Select(f => f.TextureID)
-                        .Select(t => t.ToString());
-
                     var json_data = new JsonData
                     {
-                        ["_event"] = "DebugObject",
-                        ["Textures"] = new JsonData
+                        ["_event"] = "ViewerEffect",
+                        ["Duration"] = e.Duration,
+                        ["EffectId"] = e.EffectID.ToString(),
+                        ["SourceId"] = e.SourceID.ToString(),
+                        ["TargetID"] = e.TargetID.ToString(),
+                        ["TargetPosition"] = e.TargetPosition.ToString(),
+                        ["Type"] = (int)e.Type
+                    };
+                    server.BroadcastMessage(json_data);
+                };
+
+                client.GetObjectNearestPoint += (sender, e) =>
+                {
+                    var json_data = new JsonData()
+                    {
+                        ["_event"] = "GetObjectNearestPoint",
+                        ["Simulator"] = new JsonData()
                         {
-                            ["Diffuse"] = JsonMapper.ToJson(diffuse)
+                            ["Handle"] = e.Simulator.Handle,
+                            ["Name"] = e.Simulator.Name
+                        },
+                        ["Object"] = new JsonData()
+                        {
+                            ["LocalID"] = e.Prim.LocalID
                         }
                     };
+                };
 
-                    server.BroadcastMessage(json_data);
-                }
-            };
+                client.DebugObject += (sender, e) =>
+                {
+                    var primitive = client.Objects.GetPrimitive(e.Simulator, e.LocalID, UUID.Zero, false);
+                    if (primitive != null)
+                    {
+                        var face_textures = primitive.Textures.FaceTextures;
+                        var diffuse = face_textures
+                            .Select(f => f.TextureID)
+                            .Select(t => t.ToString());
+
+                        var json_data = new JsonData
+                        {
+                            ["_event"] = "DebugObject",
+                            ["Textures"] = new JsonData
+                            {
+                                ["Diffuse"] = JsonMapper.ToJson(diffuse)
+                            }
+                        };
+
+                        server.BroadcastMessage(json_data);
+                    }
+                };
+            }
 
             #endregion SLHClient <==> WebSockets
 
