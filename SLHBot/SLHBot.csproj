@@ -53,6 +53,7 @@
     <Compile Include="LoginDetails.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SLH.cs" />
     <Compile Include="SLHClient.cs" />
     <Compile Include="JSONUtility.cs" />
     <Compile Include="Standalone.cs" />

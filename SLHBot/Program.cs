@@ -4,7 +4,6 @@ using OpenMetaverse;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -62,22 +61,15 @@ namespace SLHBot
         private static void Main(string[] args)
         {
             var shutting_down = false;
-            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+            Console.CancelKeyPress += (object sender, ConsoleCancelEventArgs e) =>
             {
                 e.Cancel = true;
                 shutting_down = true;
             };
 
-            #region Arguments
+            #region Setup
 
             var arguments = new Arguments(args);
-
-            // TODO
-            //if (arguments["help"] != null)
-            //{
-            //    Usage();
-            //    return;
-            //}
 
             var config_file_path = arguments["config-file"];
             var config_arg_text = arguments["config"];
@@ -87,7 +79,7 @@ namespace SLHBot
                 config_file_text = File.ReadAllText(config_file_path);
 
             JsonData config = new JsonData();
-            JsonData websocket_config, websocket_cert_config;
+
             if (!IsNullOrEmpty(config_file_text))
                 config = JsonMapper.ToObject(config_file_text);
 
@@ -98,48 +90,49 @@ namespace SLHBot
                     config[key] = arg_config[key];
             }
 
-            config.TryGetValue("WebSocket", out websocket_config);
-            websocket_config.TryGetValue("Certificate", out websocket_cert_config);
+            config.TryGetValue("WebSocket", out JsonData websocket_config);
+            websocket_config.TryGetValue("Certificate", out JsonData websocket_cert_config);
+            X509Certificate2 certificate = null;
 
-            TryArg(config, arguments, "FirstName", "first", out string first_name);
+            if (!TryArg(config, arguments, "FirstName", "first", out string first_name))
+                throw new ArgumentException("First name must be specified");
             TryArg(config, arguments, "LastName", "last", out string last_name);
             TryArg(config, arguments, "Password", "pass", out string password);
-            TryArg(config, arguments, "LoginURI", "login-uri", out string login_uri);
+            if (!TryArg(config, arguments, "LoginURI", "login-uri", out string login_uri))
+                login_uri = Settings.AGNI_LOGIN_SERVER;
             TryArg(config, arguments, "StartLocation", "start-location", out string start_location);
-            TryArg(websocket_config, arguments, "Location", "ws", out string ws_location);
-            TryArg(websocket_cert_config, arguments, "Path", "ws-cert-path", out string ws_cert_path);
-            TryArg(websocket_cert_config, arguments, "Password", "ws-cert-pass", out string ws_cert_password);
+            bool ws_location_defined = TryArg(websocket_config, arguments, "Location", "ws", out string ws_location);
+            bool ws_cert_path_defined = TryArg(websocket_cert_config, arguments, "Path", "ws-cert-path", out string ws_cert_path);
+            if (!ws_location_defined)
+            {
+                if (ws_cert_path_defined)
+                    ws_location = "wss://127.0.0.1:5756";
+                else
+                    ws_location = "ws://127.0.0.1:5756";
+            }
+            if (ws_cert_path_defined)
+            {
+                if (TryArg(websocket_cert_config, arguments, "Password", "ws-cert-pass", out string ws_cert_password))
+                    certificate = new X509Certificate2(ws_cert_path, ws_cert_password);
+                else
+                    certificate = new X509Certificate2(ws_cert_path);
+            }
+
             TryArg(config, arguments, "StandaloneAddress", "standalone-address", out string standalone_binding_address);
             TryArg(config, arguments, "DummySession", "dummy-session", out bool dummy_session);
 
-            if (IsNullOrEmpty(ws_location))
+            #endregion Setup
+
+            #region Server
+
+            var server = new SLHWebSocketServer(ws_location)
             {
-                if (IsNullOrEmpty(ws_cert_path))
-                    ws_location = "ws://127.0.0.1:5756";
-                else
-                    ws_location = "wss://127.0.0.1:5756";
-            }
+                Certificate = certificate
+            };
 
-            X509Certificate2 certificate = null;
+            server.Start();
 
-            if (ws_location.ToLower().StartsWith("wss://"))
-            {
-                if (!IsNullOrEmpty(ws_cert_path))
-                {
-                    if (IsNullOrEmpty(ws_cert_password))
-                        certificate = new X509Certificate2(ws_cert_path);
-                    else
-                        certificate = new X509Certificate2(ws_cert_path, ws_cert_password);
-                }
-            }
-
-            #endregion Arguments
-
-            if (IsNullOrEmpty(login_uri))
-                login_uri = Settings.AGNI_LOGIN_SERVER;
-
-            if (IsNullOrEmpty(first_name))
-                throw new ArgumentException("First name must be specified");
+            #endregion Server
 
             #region Standalone
 
@@ -151,7 +144,7 @@ namespace SLHBot
 
             #endregion Standalone
 
-            #region SLHClient
+            #region Client
 
             SLHClient client = null;
             var logged_out = false;
@@ -212,136 +205,25 @@ namespace SLHBot
                 }
             }
 
-            #endregion SLHClient
+            #endregion Client
 
-            #region WebSockets
-
-            var server = new SLHWebSocketServer(ws_location)
+            if (dummy_session)
             {
-                Certificate = certificate
-            };
-
-            server.Start(); ;
-
-            #endregion WebSockets
-
-            #region SLHClient <==> WebSockets
-
-            if (client != null)
-            {
-                client.Self.ChatFromSimulator += (sender, e) =>
-                {
-                    switch (e.Type)
-                    {
-                        default:
-                            var json_data = new JsonData
-                            {
-                                ["_event"] = "ChatFromSimulator",
-                                ["AudibleLevel"] = (int)e.AudibleLevel,
-                                ["FromName"] = e.FromName,
-                                ["Message"] = e.Message,
-                                ["OwnerID"] = e.OwnerID.ToString(),
-                                ["Position"] = e.Position.ToString(),
-                                ["Simulator"] = new JsonData
-                                {
-                                    ["Name"] = e.Simulator.Name,
-                                    ["Handle"] = e.Simulator.Handle
-                                },
-                                ["SourceType"] = (int)e.SourceType,
-                                ["Type"] = (int)e.Type
-                            };
-                            server.BroadcastMessage(json_data);
-                            break;
-
-                        case ChatType.StartTyping:
-                        case ChatType.StopTyping:
-                            break;
-                    }
-                };
-
-                client.Avatars.ViewerEffect += (sender, e) =>
-                {
-                    var json_data = new JsonData
-                    {
-                        ["_event"] = "ViewerEffect",
-                        ["Duration"] = e.Duration,
-                        ["EffectId"] = e.EffectID.ToString(),
-                        ["SourceId"] = e.SourceID.ToString(),
-                        ["TargetID"] = e.TargetID.ToString(),
-                        ["TargetPosition"] = e.TargetPosition.ToString(),
-                        ["Type"] = (int)e.Type
-                    };
-                    server.BroadcastMessage(json_data);
-                };
-
-                client.GetObjectNearestPoint += (sender, e) =>
-                {
-                    var json_data = new JsonData()
-                    {
-                        ["_event"] = "GetObjectNearestPoint",
-                        ["Simulator"] = new JsonData()
-                        {
-                            ["Handle"] = e.Simulator.Handle,
-                            ["Name"] = e.Simulator.Name
-                        },
-                        ["Object"] = new JsonData()
-                        {
-                            ["LocalID"] = e.Prim.LocalID
-                        }
-                    };
-                };
-
-                client.DebugObject += (sender, e) =>
-                {
-                    var primitive = client.Objects.GetPrimitive(e.Simulator, e.LocalID, UUID.Zero, false);
-                    if (primitive != null)
-                    {
-                        var face_textures = primitive.Textures.FaceTextures;
-                        var diffuse = face_textures
-                            .Select(f => f.TextureID)
-                            .Select(t => t.ToString());
-
-                        var json_data = new JsonData
-                        {
-                            ["_event"] = "DebugObject",
-                            ["Textures"] = new JsonData
-                            {
-                                ["Diffuse"] = JsonMapper.ToJson(diffuse)
-                            }
-                        };
-
-                        server.BroadcastMessage(json_data);
-                    }
-                };
+                while (!logged_out)
+                    Thread.Sleep(100);
             }
-
-            #endregion SLHClient <==> WebSockets
-
-            #region Main Loop
-
-            server.ReceivedJSONMessage += (sender, e) =>
+            else
             {
-                try
+                using (var slh = new SLH(client, server))
                 {
-                    if (dummy_session)
-                        Logger.Log(e.Message.ToJson(), Helpers.LogLevel.Info);
-                    else
-                        client.ProcessMessage(e.Message);
+                    while (!logged_out)
+                    {
+                        if (shutting_down)
+                            client.Network?.Logout();
+                        Thread.Sleep(100);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Logger.Log("Failed to process message.", Helpers.LogLevel.Error, ex);
-                }
-            };
-
-            while (!logged_out)
-            {
-                if (shutting_down)
-                    client.Network?.Logout();
-                Thread.Sleep(100);
             }
-
-            #endregion Main Loop
         }
     }
 }
