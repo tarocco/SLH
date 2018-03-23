@@ -1,7 +1,7 @@
 using System;
 using LitJson;
 
-namespace SLHBot
+namespace LibSLH
 {
     public static class JSONUtility
     {

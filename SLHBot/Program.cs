@@ -1,4 +1,5 @@
 ﻿using CommandLine.Utility;
+using LibSLH;
 using LitJson;
 using OpenMetaverse;
 using System;
@@ -7,7 +8,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using static SLHBot.Utility;
+using static LibSLH.Utility;
 using static System.String;
 
 namespace SLHBot

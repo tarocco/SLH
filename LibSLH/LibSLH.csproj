@@ -4,17 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{79EAE683-8406-4441-861F-15A72D3A59EA}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>SLHBot</RootNamespace>
-    <AssemblyName>SLHBot</AssemblyName>
+    <ProjectGuid>{C23F7230-F882-4F38-894B-88A897F125F8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LibSLH</RootNamespace>
+    <AssemblyName>LibSLH</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,6 +30,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Fleck, Version=0.14.0.59, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Fleck.0.14.0.59\lib\net40\Fleck.dll</HintPath>
+    </Reference>
+    <Reference Include="KdTreeLib, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KdTree.1.4.1\lib\net462\KdTreeLib.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -43,17 +46,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="Arguments.cs" />
+    <Compile Include="JSONUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Standalone.cs" />
+    <Compile Include="SLH.cs" />
+    <Compile Include="SLHClient.cs" />
+    <Compile Include="SLHWebSocketServer.cs" />
+    <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libopenmetaverse\OpenMetaverse.StructuredData\OpenMetaverse.StructuredData.csproj">
       <Project>{1d49a5a1-80c4-49ad-a1c4-9beb968b3363}</Project>
       <Name>OpenMetaverse.StructuredData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\libopenmetaverse\OpenMetaverse.Utilities\OpenMetaverse.Utilities.csproj">
+      <Project>{2bf2a655-ad76-49dd-88c8-3e85e97f4239}</Project>
+      <Name>OpenMetaverse.Utilities</Name>
     </ProjectReference>
     <ProjectReference Include="..\libopenmetaverse\OpenMetaverseTypes\OpenMetaverseTypes.csproj">
       <Project>{595d201f-599f-49e7-ac02-07f2676e8bc6}</Project>
@@ -62,10 +73,6 @@
     <ProjectReference Include="..\libopenmetaverse\OpenMetaverse\OpenMetaverse.csproj">
       <Project>{bf2c97f8-f2c0-4235-9533-2d4c4cfaefcd}</Project>
       <Name>OpenMetaverse</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\LibSLH\LibSLH.csproj">
-      <Project>{c23f7230-f882-4f38-894b-88a897f125f8}</Project>
-      <Name>LibSLH</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

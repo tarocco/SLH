@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
-namespace SLHBot
+namespace LibSLH
 {
-    internal class SLHWebSocketServer : IDisposable
+    public class SLHWebSocketServer : IDisposable
     {
         private List<IWebSocketConnection> Sockets;
         private WebSocketServer Server;

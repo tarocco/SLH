@@ -3,9 +3,9 @@ using OpenMetaverse;
 using System;
 using System.Linq;
 
-namespace SLHBot
+namespace LibSLH
 {
-    internal class SLH : IDisposable
+    public class SLH : IDisposable
     {
         private readonly SLHClient Client;
         private readonly SLHWebSocketServer Server;

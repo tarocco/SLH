@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SLHBot
+namespace LibSLH
 {
     public static class Utility
     {
