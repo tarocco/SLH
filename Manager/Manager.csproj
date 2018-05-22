@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{79EAE683-8406-4441-861F-15A72D3A59EA}</ProjectGuid>
+    <ProjectGuid>{C63331E6-F923-4F29-A498-2223C27BD570}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>SLHBot</RootNamespace>
-    <AssemblyName>SLHBot</AssemblyName>
+    <RootNamespace>Manager</RootNamespace>
+    <AssemblyName>Manager</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Fleck, Version=0.14.0.59, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Fleck.0.14.0.59\lib\net40\Fleck.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -45,28 +47,10 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Standalone.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\libopenmetaverse\OpenMetaverse.StructuredData\OpenMetaverse.StructuredData.csproj">
-      <Project>{1d49a5a1-80c4-49ad-a1c4-9beb968b3363}</Project>
-      <Name>OpenMetaverse.StructuredData</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\libopenmetaverse\OpenMetaverseTypes\OpenMetaverseTypes.csproj">
-      <Project>{595d201f-599f-49e7-ac02-07f2676e8bc6}</Project>
-      <Name>OpenMetaverseTypes</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\libopenmetaverse\OpenMetaverse\OpenMetaverse.csproj">
-      <Project>{bf2c97f8-f2c0-4235-9533-2d4c4cfaefcd}</Project>
-      <Name>OpenMetaverse</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\LibSLH\LibSLH.csproj">
-      <Project>{c23f7230-f882-4f38-894b-88a897f125f8}</Project>
-      <Name>LibSLH</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,19 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SLHBot
 {
-    static class Standalone
+    internal class Standalone
     {
-        public static void StartListener(HttpListener listener)
+        private CancellationTokenSource CancelSource;
+        public Task Task { get; private set; }
+
+        public Task Run(string standalone_binding_address)
         {
-            Task.Run(async () =>
+            CancelSource = new CancellationTokenSource();
+            var cancel_token = CancelSource.Token;
+            // KISS HTTP server
+            var listener = new HttpListener();
+            var prefix = $"http://{standalone_binding_address}/";
+            listener.Prefixes.Add(prefix);
+            Task = Task.Run(async () =>
             {
+                cancel_token.ThrowIfCancellationRequested();
+
                 listener.Start();
                 for (; ; )
                 {
@@ -45,8 +54,21 @@ namespace SLHBot
                         await writer.WriteAsync(response);
                         await writer.FlushAsync();
                     }
+
+                    if (cancel_token.IsCancellationRequested)
+                        cancel_token.ThrowIfCancellationRequested();
                 }
-            });
+            }, cancel_token);
+
+            Console.WriteLine($"Running standalone http server on {prefix}");
+
+            return Task;
+        }
+
+        private Task Stop()
+        {
+            CancelSource.Cancel();
+            return Task;
         }
     }
 }

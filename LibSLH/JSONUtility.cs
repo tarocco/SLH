@@ -1,7 +1,7 @@
 using System;
 using LitJson;
 
-namespace SLHBot
+namespace LibSLH
 {
     public static class JSONUtility
     {
@@ -169,6 +169,34 @@ namespace SLHBot
             catch
             {
                 value = default(JsonData);
+                return false;
+            }
+        }
+
+        public static bool TryGetValue(this JsonData json, string key, out bool value)
+        {
+            try
+            {
+                value = (bool)json[key];
+                return true;
+            }
+            catch
+            {
+                value = default(bool);
+                return false;
+            }
+        }
+
+        public static bool TryGetValue(this JsonData json, int index, out bool value)
+        {
+            try
+            {
+                value = (bool)json[index];
+                return true;
+            }
+            catch
+            {
+                value = default(bool);
                 return false;
             }
         }
