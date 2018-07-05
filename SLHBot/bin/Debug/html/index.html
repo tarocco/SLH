@@ -3,20 +3,21 @@
     <meta charset="utf-8">
 </head>
 <body>
-    <script src="js/wsconsole.js"></script>
     <form onsubmit="event.preventDefault(); return SendChatMessage()">
         <input type="text" id="ChatInput" />
         <button type="submit">Say</button>
     </form>
-    <!--<form onsubmit="event.preventDefault(); return TeleportToAvatar()">
+    <form onsubmit="event.preventDefault(); return TeleportToAvatar()">
         <input type="text" id="AvatarNameInput" />
         <button type="submit">Teleport to Avatar</button>
-    </form>-->
+    </form>
     <label for="AuthorizedAvatar1">Authorized Avatar: </label>
     <form onsubmit="event.preventDefault(); OnApplyAuthorizedAvatars();">
         <input name="AuthorizedAvatar1" class="AuthorizedAvatar" />
         <button type="submit">Apply</button>
     </form>
     <textarea id="Console" readonly="readonly"></textarea>
+    <script src="js/jrpc.min.js"></script>
+    <script src="js/wsconsole.js"></script>
 </body>
 </html>

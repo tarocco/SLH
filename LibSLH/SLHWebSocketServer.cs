@@ -13,12 +13,13 @@ namespace LibSLH
         private WebSocketServer Server;
         //private LocklessQueue<JsonData> MessageQueue;
 
-        public class JSONMessageEventArgs : EventArgs
+        public class MessageEventArgs : EventArgs
         {
-            public JsonData Message;
+            public IWebSocketConnection Socket;
+            public String Message;
         }
 
-        public event EventHandler<JSONMessageEventArgs> ReceivedJSONMessage;
+        public event EventHandler<MessageEventArgs> ReceivedMessage;
 
         public X509Certificate2 Certificate
         {
@@ -29,12 +30,6 @@ namespace LibSLH
         public SLHWebSocketServer(string location)
         {
             Server = new WebSocketServer(location);
-            Setup();
-        }
-
-        public SLHWebSocketServer(int port_number, string location)
-        {
-            Server = new WebSocketServer(port_number, location);
             Setup();
         }
 
@@ -66,18 +61,12 @@ namespace LibSLH
             {
                 try
                 {
-                    JsonData data;
-                    try
+                    var args = new MessageEventArgs()
                     {
-                        data = JsonMapper.ToObject(message);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new ArgumentException("Failed to parse JSON message.", ex);
-                    }
-
-                    var args = new JSONMessageEventArgs() { Message = data };
-                    ReceivedJSONMessage?.Invoke(this, args);
+                        Socket = socket,
+                        Message = message
+                    };
+                    ReceivedMessage?.Invoke(this, args);
 
                     //try
                     //{
@@ -107,7 +96,7 @@ namespace LibSLH
 
         public void BroadcastMessage(JsonData data)
         {
-            foreach(var socket in Sockets)
+            foreach (var socket in Sockets)
             {
                 socket.Send(data.ToJson());
             }

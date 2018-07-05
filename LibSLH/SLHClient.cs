@@ -38,7 +38,7 @@ namespace LibSLH
         {
             ObjectProximalLookup = new KdTree<float, Primitive>(3, new FloatMath(), AddDuplicateBehavior.Update);
             ObjectPositions = new Dictionary<Primitive, float[]>();
-            Objects.ObjectUpdate += HandleObjectUpdate;
+            //Objects.ObjectUpdate += HandleObjectUpdate;
             Self.IM += HandleInstantMessage;
         }
 
@@ -86,7 +86,7 @@ namespace LibSLH
             return Network.Simulators.SelectMany(s => s.ObjectsAvatars.Copy().Values);
         }
 
-        public void ProcessMessage(JsonData message_body)
+        /*public void ProcessMessage(JsonData message_body)
         {
             var action = (string)message_body["Action"];
 
@@ -123,7 +123,7 @@ namespace LibSLH
                     }
                     break;
             }
-        }
+        }*/
 
         public void OnDebugObject(Simulator simulator, uint local_id)
         {
@@ -151,15 +151,22 @@ namespace LibSLH
 
         public async void OnTeleportToAvatar(string avatar_name)
         {
-            var search_avatars = await SearchAvatarsByName(avatar_name);
-            var avatar_data = search_avatars.First(a => $"{a.FirstName} {a.LastName}" == avatar_name);
-            var agent_id = avatar_data.AgentID;
-            //var region_avatars = GetAllAvatars().ToArray();
-            var agent_simulator = Network.Simulators
-                .First(s => s.AvatarPositions.ContainsKey(agent_id));
-            var agent_position = agent_simulator.AvatarPositions[agent_id];
-            var avatar_forward = Vector3.UnitX;
-            Self.Teleport(agent_simulator.Handle, agent_position, avatar_forward);
+            try
+            {
+                var search_avatars = await SearchAvatarsByName(avatar_name);
+                var avatar_data = search_avatars.First(a => $"{a.FirstName} {a.LastName}" == avatar_name);
+                var agent_id = avatar_data.AgentID;
+                //var region_avatars = GetAllAvatars().ToArray();
+                var agent_simulator = Network.Simulators
+                    .First(s => s.AvatarPositions.ContainsKey(agent_id));
+                var agent_position = agent_simulator.AvatarPositions[agent_id];
+                var avatar_forward = Vector3.UnitX;
+                Self.Teleport(agent_simulator.Handle, agent_position, avatar_forward);
+            }
+            catch(Exception ex)
+            {
+                Logger.Log("Could not teleport to avatar.", Helpers.LogLevel.Error, ex);
+            }
         }
 
         public void OnInstantMessage(Simulator simulator, InstantMessage instant_message)

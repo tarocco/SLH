@@ -32,8 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Fleck, Version=0.14.0.59, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Fleck.0.14.0.59\lib\net40\Fleck.dll</HintPath>
+    <Reference Include="Fleck, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Fleck.1.0.3\lib\net45\Fleck.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
