@@ -1,0 +1,521 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>System.Data.JsonRpc</name>
+    </assembly>
+    <members>
+        <member name="T:System.Data.JsonRpc.JsonRpcCompatibilityLevel">
+            <summary>Represents JSON-RPC protocol compatibility level.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcCompatibilityLevel.Level1">
+            <summary>Compatibility level that matches JSON-RPC protocol version 1.0.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcCompatibilityLevel.Level2">
+            <summary>Compatibility level that matches JSON-RPC protocol version 2.0.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcData`1">
+            <summary>Represents deserialized RPC data.</summary>
+            <typeparam name="T">The type of the message.</typeparam>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcData`1.IsBatch">
+            <summary>Gets a value indicating whether the data is a batch.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcData`1.Item">
+            <summary>Gets an item for non-batch data.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcData`1.Items">
+            <summary>Gets a collection of items for batch data.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcError">
+            <summary>Represents RPC error information.</summary>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcError.#ctor(System.Int64,System.String,System.Object)">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcError" /> class.</summary>
+            <param name="code">The number that indicates the error type that occurred.</param>
+            <param name="message">The string providing a short description of the error. The message should be limited to a single concise sentence.</param>
+            <param name="data">The primitive or structured value that contains additional information about the error.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="message" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="code" /> is outside the allowable range.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcError.#ctor(System.Int64,System.String)">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcError" /> class.</summary>
+            <param name="code">The number that indicates the error type that occurred.</param>
+            <param name="message">The string providing a short description of the error. The message should be limited to a single concise sentence.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="message" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="code" /> is outside the allowable range.</exception>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcError.Code">
+            <summary>Gets a number that indicates the error type that occurred.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcError.Message">
+            <summary>Gets a string providing a short description of the error.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcError.Data">
+            <summary>Gets an optional value that contains additional information about the error.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcError.HasData">
+            <summary>Gets a value indicating whether the message has additional information specified.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcErrorCodes">
+            <summary>Defines standard RPC error codes and error codes ranges.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcErrorCodes.InvalidJson">
+            <summary>The error code which specifies, that the provided JSON is invalid.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcErrorCodes.InvalidOperation">
+            <summary>The error code which specifies, that an error occurred during processing the message.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcErrorCodes.InvalidParameters">
+            <summary>The error code which specifies, that the specified method parameters are invalid.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcErrorCodes.InvalidMethod">
+            <summary>The error code which specifies, that the specified method does not exist or is not available.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcErrorCodes.InvalidMessage">
+            <summary>The error code which specifies, that the provided message is not valid.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcErrorCodes.ServerErrorsLowerBoundary">
+            <summary>The lower boundary of the implementation-defined server error codes range.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcErrorCodes.ServerErrorsUpperBoundary">
+            <summary>The upper boundary of the implementation-defined server error codes range.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcErrorCodes.StandardErrorsLowerBoundary">
+            <summary>The lower boundary of the standard error codes range.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcErrorCodes.StandardErrorsUpperBoundary">
+            <summary>The upper boundary of the standard error codes range.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcException">
+            <summary>Represents errors that occur during RPC message processing.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcException.MessageId">
+            <summary>Gets an identifier for the related message.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcException.ErrorCode">
+            <summary>Gets the corresponding error code.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcId">
+            <summary>Represents RPC message identifier.</summary>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.#ctor(System.String)">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcId" /> structure.</summary>
+            <param name="value">The identifier value.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="value" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.#ctor(System.Int64)">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcId" /> structure.</summary>
+            <param name="value">The identifier value.</param>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.#ctor(System.Double)">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcId" /> structure.</summary>
+            <param name="value">The identifier value.</param>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.CompareTo(System.Data.JsonRpc.JsonRpcId@)">
+            <summary>Compares the current <see cref="T:System.Data.JsonRpc.JsonRpcId" /> with another <see cref="T:System.Data.JsonRpc.JsonRpcId" /> and returns an integer that indicates whether the current <see cref="T:System.Data.JsonRpc.JsonRpcId" /> precedes, follows, or occurs in the same position in the sort order as the other <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</summary>
+            <param name="other">A <see cref="T:System.Data.JsonRpc.JsonRpcId" /> to compare with the current <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</param>
+            <returns>A value that indicates the relative order of the objects being compared.</returns>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.Equals(System.Data.JsonRpc.JsonRpcId@)">
+            <summary>Indicates whether the current <see cref="T:System.Data.JsonRpc.JsonRpcId" /> is equal to another <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</summary>
+            <param name="other">A <see cref="T:System.Data.JsonRpc.JsonRpcId" /> to compare with the current <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</param>
+            <returns><see langword="true" /> if the current <see cref="T:System.Data.JsonRpc.JsonRpcId" /> is equal to the other <see cref="T:System.Data.JsonRpc.JsonRpcId" />; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.Equals(System.Object)">
+            <summary>Indicates whether the current <see cref="T:System.Data.JsonRpc.JsonRpcId" /> is equal to the specified object.</summary>
+            <param name="obj">The object to compare with the current <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</param>
+            <returns><see langword="true" /> if the current <see cref="T:System.Data.JsonRpc.JsonRpcId" /> is equal to the specified object; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.GetHashCode">
+            <summary>Returns the hash code for the current <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</summary>
+            <returns>A 32-bit signed integer hash code.</returns>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.ToString">
+            <summary>Converts the current <see cref="T:System.Data.JsonRpc.JsonRpcId" /> to its equivalent string representation.</summary>
+            <returns>The string representation of the current <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</returns>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.op_Equality(System.Data.JsonRpc.JsonRpcId@,System.Data.JsonRpc.JsonRpcId@)">
+            <summary>Indicates whether the left <see cref="T:System.Data.JsonRpc.JsonRpcId" /> is equal to the right <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</summary>
+            <param name="obj1">The left <see cref="T:System.Data.JsonRpc.JsonRpcId" /> operand.</param>
+            <param name="obj2">The right <see cref="T:System.Data.JsonRpc.JsonRpcId" /> operand.</param>
+            <returns><see langword="true" /> if the left <see cref="T:System.Data.JsonRpc.JsonRpcId" /> is equal to the right <see cref="T:System.Data.JsonRpc.JsonRpcId" />; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.op_Inequality(System.Data.JsonRpc.JsonRpcId@,System.Data.JsonRpc.JsonRpcId@)">
+            <summary>Indicates whether the left <see cref="T:System.Data.JsonRpc.JsonRpcId" /> is not equal to the right <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</summary>
+            <param name="obj1">The left <see cref="T:System.Data.JsonRpc.JsonRpcId" /> operand.</param>
+            <param name="obj2">The right <see cref="T:System.Data.JsonRpc.JsonRpcId" /> operand.</param>
+            <returns><see langword="true" /> if the left <see cref="T:System.Data.JsonRpc.JsonRpcId" /> is not equal to the right <see cref="T:System.Data.JsonRpc.JsonRpcId" />; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.op_Implicit(System.String)~System.Data.JsonRpc.JsonRpcId">
+            <summary>Performs an implicit conversion from <see cref="T:System.String" /> to <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</summary>
+            <param name="value">The value to create a <see cref="T:System.Data.JsonRpc.JsonRpcId" /> from.</param>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.op_Implicit(System.Int64)~System.Data.JsonRpc.JsonRpcId">
+            <summary>Performs an implicit conversion from <see cref="T:System.UInt64" /> to <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</summary>
+            <param name="value">The value to create a <see cref="T:System.Data.JsonRpc.JsonRpcId" /> from.</param>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.op_Implicit(System.Double)~System.Data.JsonRpc.JsonRpcId">
+            <summary>Performs an implicit conversion from <see cref="T:System.Double" /> to <see cref="T:System.Data.JsonRpc.JsonRpcId" />.</summary>
+            <param name="value">The value to create a <see cref="T:System.Data.JsonRpc.JsonRpcId" /> from.</param>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.op_Explicit(System.Data.JsonRpc.JsonRpcId@)~System.String">
+            <summary>Performs an implicit conversion from <see cref="T:System.Data.JsonRpc.JsonRpcId" /> to <see cref="T:System.String" />.</summary>
+            <param name="value">The identifier to get a <see cref="T:System.String" /> value from.</param>
+            <exception cref="T:System.InvalidCastException">The underlying value is not of type <see cref="T:System.String" />.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.op_Explicit(System.Data.JsonRpc.JsonRpcId@)~System.Int64">
+            <summary>Performs an implicit conversion from <see cref="T:System.Data.JsonRpc.JsonRpcId" /> to <see cref="T:System.Int64" />.</summary>
+            <param name="value">The identifier to get a <see cref="T:System.Int64" /> value from.</param>
+            <exception cref="T:System.InvalidCastException">The underlying value is not of type <see cref="T:System.Int64" />.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcId.op_Explicit(System.Data.JsonRpc.JsonRpcId@)~System.Double">
+            <summary>Performs an implicit conversion from <see cref="T:System.Data.JsonRpc.JsonRpcId" /> to <see cref="T:System.Double" />.</summary>
+            <param name="value">The identifier to get a <see cref="T:System.Double" /> value from.</param>
+            <exception cref="T:System.InvalidCastException">The underlying value is not of type <see cref="T:System.Double" />.</exception>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcId.Type">
+            <summary>Gets the identifier type.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcIdType">
+            <summary>Represents RPC message identifier type.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcIdType.None">
+            <summary>Empty identifier.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcIdType.String">
+            <summary>Identifier of string type.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcIdType.Integer">
+            <summary>Identifier of integer type.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcIdType.Float">
+            <summary>Identifier of float type.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcItem`1">
+            <summary>Represents information about an RPC message.</summary>
+            <typeparam name="T">The type of the message.</typeparam>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcItem`1.Message">
+            <summary>Gets a message for the valid item.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcItem`1.Exception">
+            <summary>Gets an exception for the invalid item.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcItem`1.IsValid">
+            <summary>Gets a value indicating whether the item represents a valid message.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcMessage">
+            <summary>Represents an RPC message.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcMessage.Id">
+            <summary>Gets an identifier.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcParametersType">
+            <summary>Represents RPC method parameters type.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcParametersType.None">
+            <summary>Parameters are not provided.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcParametersType.ByPosition">
+            <summary>Parameters are provided by position.</summary>
+        </member>
+        <member name="F:System.Data.JsonRpc.JsonRpcParametersType.ByName">
+            <summary>Parameters are provided by name.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcRequest">
+            <summary>Represents an RPC request message.</summary>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcRequest.#ctor(System.String,System.Data.JsonRpc.JsonRpcId@)">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcRequest" /> class.</summary>
+            <param name="method">The string containing the name of the method to be invoked.</param>
+            <param name="id">The identifier established by the client.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcRequest.#ctor(System.String,System.Data.JsonRpc.JsonRpcId@,System.Collections.Generic.IReadOnlyList{System.Object})">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcRequest" /> class.</summary>
+            <param name="method">The string containing the name of the method to be invoked.</param>
+            <param name="id">The identifier established by the client.</param>
+            <param name="parameters">The parameters to be used during the invocation of the method, provided by position.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> or <paramref name="parameters" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcRequest.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.Object})">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcRequest" /> class.</summary>
+            <param name="method">The string containing the name of the method to be invoked.</param>
+            <param name="parameters">The parameters to be used during the invocation of the method, provided by position.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> or <paramref name="parameters" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcRequest.#ctor(System.String,System.Data.JsonRpc.JsonRpcId@,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcRequest" /> class.</summary>
+            <param name="method">The string containing the name of the method to be invoked.</param>
+            <param name="id">The identifier established by the client.</param>
+            <param name="parameters">The parameters to be used during the invocation of the method, provided by name.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> or <paramref name="parameters" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcRequest.#ctor(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcRequest" /> class.</summary>
+            <param name="method">The string containing the name of the method to be invoked.</param>
+            <param name="parameters">The parameters to be used during the invocation of the method, provided by name.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> or <paramref name="parameters" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcRequest.IsSystemMethod(System.String)">
+            <summary>Checks whether the method is a system extension method.</summary>
+            <param name="method">The method name.</param>
+            <returns><see langword="true" /> if the specified method is a system extension method; otherwise, <see langword="false" />.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcRequest.Method">
+            <summary>Gets a string containing the name of the method to be invoked.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcRequest.ParametersType">
+            <summary>Gets parameters type.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcRequest.ParametersByName">
+            <summary>Gets parameters, provided by name.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcRequest.ParametersByPosition">
+            <summary>Gets parameters, provided by position.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcRequest.IsNotification">
+            <summary>Gets a value indicating whether the message is a notification.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcRequest.IsSystem">
+            <summary>Gets a value indicating whether the message is a system extension.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcRequestContract">
+            <summary>Specifies a type contract for request deserialization.</summary>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcRequestContract.#ctor">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcRequestContract" /> class.</summary>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcRequestContract.#ctor(System.Collections.Generic.IReadOnlyList{System.Type})">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcRequestContract" /> class.</summary>
+            <param name="parameters">The contract for parameters, provided by position.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="parameters" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcRequestContract.#ctor(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Type})">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcRequestContract" /> class.</summary>
+            <param name="parameters">The contract for parameters, provided by name.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="parameters" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcRequestContract.ParametersType">
+            <summary>Gets parameters type.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcRequestContract.ParametersByName">
+            <summary>Gets a contract for parameters, provided by name.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcRequestContract.ParametersByPosition">
+            <summary>Gets a contract for parameters, provided by position.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcResponse">
+            <summary>Represents an RPC response message.</summary>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcResponse.#ctor(System.Object,System.Data.JsonRpc.JsonRpcId@)">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcResponse" /> class.</summary>
+            <param name="result">The value, which is determined by the method invoked on the server.</param>
+            <param name="id">The identifier, which must be the same as the value in the request object.</param>
+            <exception cref="T:System.ArgumentException"><paramref name="id" /> has empty value.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcResponse.#ctor(System.Data.JsonRpc.JsonRpcError,System.Data.JsonRpc.JsonRpcId@)">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcResponse" /> class.</summary>
+            <param name="error">The <see cref="T:System.Data.JsonRpc.JsonRpcError" /> object with information.</param>
+            <param name="id">The identifier, which must be the same as the value in the request object.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="error" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcResponse.Result">
+            <summary>Gets a value, which is determined by the method invoked.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcResponse.Error">
+            <summary>Gets an object, which represents error information.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcResponse.Success">
+            <summary>Gets a value indicating whether the request was successful.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcResponseContract">
+            <summary>Specifies a type contract for response deserialization.</summary>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcResponseContract.#ctor(System.Type,System.Type)">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcResponseContract" /> class.</summary>
+            <param name="resultType">The type of method result.</param>
+            <param name="errorDataType">The type of method error data.</param>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcResponseContract.ResultType">
+            <summary>Gets a type of method result object.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcResponseContract.ErrorDataType">
+            <summary>Gets a type of method error data object.</summary>
+        </member>
+        <member name="T:System.Data.JsonRpc.JsonRpcSerializer">
+            <summary>Serializes and deserializes JSON-RPC messages into and from the JSON format.</summary>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.#ctor(System.Collections.Generic.IDictionary{System.String,System.Data.JsonRpc.JsonRpcRequestContract},System.Collections.Generic.IDictionary{System.String,System.Data.JsonRpc.JsonRpcResponseContract},System.Collections.Generic.IDictionary{System.Data.JsonRpc.JsonRpcId,System.String},System.Collections.Generic.IDictionary{System.Data.JsonRpc.JsonRpcId,System.Data.JsonRpc.JsonRpcResponseContract})">
+            <summary>Initializes a new instance of the <see cref="T:System.Data.JsonRpc.JsonRpcSerializer" /> class.</summary>
+            <param name="requestContracts">The request contracts.</param>
+            <param name="responseContracts">The response contracts.</param>
+            <param name="staticResponseBindings">The static response bindings.</param>
+            <param name="dynamicResponseBindings">The dynamic response bindings.</param>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.DeserializeRequestData(System.String)">
+            <summary>Deserializes the specified JSON string to request data.</summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>RPC information about requests.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="json" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during request(s) deserialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.DeserializeRequestData(System.IO.Stream)">
+            <summary>Deserializes the specified stream with a JSON string to request data.</summary>
+            <param name="stream">The stream with a JSON string to deserialize.</param>
+            <returns>RPC information about requests.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during request(s) deserialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.DeserializeRequestDataAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Deserializes the specified stream with a JSON string to request data as an asynchronous operation.</summary>
+            <param name="stream">The stream with a JSON string to deserialize.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is RPC information about requests.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during request(s) deserialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.DeserializeResponseData(System.String)">
+            <summary>Deserializes the specified JSON string to response data.</summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>RPC information about responses.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="json" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during response(s) deserialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.DeserializeResponseData(System.IO.Stream)">
+            <summary>Deserializes the specified stream with a JSON string to response data.</summary>
+            <param name="stream">The stream with a JSON string to deserialize.</param>
+            <returns>RPC information about responses.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during response(s) deserialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.DeserializeResponseDataAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Deserializes the specified stream with a JSON string to response data as an asynchronous operation.</summary>
+            <param name="stream">The stream with a JSON string to deserialize.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is RPC information about responses.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during response(s) deserialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeRequest(System.Data.JsonRpc.JsonRpcRequest)">
+            <summary>Serializes the specified request to a JSON string.</summary>
+            <param name="request">The request to serialize.</param>
+            <returns>A JSON string representation of the specified request.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="request" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during request serialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeRequest(System.Data.JsonRpc.JsonRpcRequest,System.IO.Stream)">
+            <summary>Serializes the specified request to the specified stream.</summary>
+            <param name="request">The request to serialize.</param>
+            <param name="stream">The stream for a JSON string.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="request" /> or <paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during request serialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeRequestAsync(System.Data.JsonRpc.JsonRpcRequest,System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Serializes the specified request to the specified stream as an asynchronous operation.</summary>
+            <param name="request">The request to serialize.</param>
+            <param name="stream">The stream for a JSON string.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON string representation of the specified request.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="request" /> or <paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during request serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeRequests(System.Collections.Generic.IReadOnlyList{System.Data.JsonRpc.JsonRpcRequest})">
+            <summary>Serializes the specified collection of requests to a JSON string.</summary>
+            <param name="requests">The collection of requests to serialize.</param>
+            <returns>A JSON string representation of the specified collection of requests.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="requests" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during requests serialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeRequests(System.Collections.Generic.IReadOnlyList{System.Data.JsonRpc.JsonRpcRequest},System.IO.Stream)">
+            <summary>Serializes the specified collection of requests to the specified stream.</summary>
+            <param name="requests">The collection of requests to serialize.</param>
+            <param name="stream">The stream for a JSON string.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="requests" /> or <paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during requests serialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeRequestsAsync(System.Collections.Generic.IReadOnlyList{System.Data.JsonRpc.JsonRpcRequest},System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Serializes the specified collection of requests to the specified stream as an asynchronous operation.</summary>
+            <param name="requests">The collection of requests to serialize.</param>
+            <param name="stream">The stream for a JSON string.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON string representation of the specified collection of requests.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="requests" /> or <paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during requests serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeResponse(System.Data.JsonRpc.JsonRpcResponse)">
+            <summary>Serializes the specified response to a JSON string.</summary>
+            <param name="response">The response to serialize.</param>
+            <returns>A JSON string representation of the specified response.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="response" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during response serialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeResponse(System.Data.JsonRpc.JsonRpcResponse,System.IO.Stream)">
+            <summary>Serializes the specified response to the specified stream.</summary>
+            <param name="response">The response to serialize.</param>
+            <param name="stream">The stream for a JSON string.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="response" /> or <paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during response serialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeResponseAsync(System.Data.JsonRpc.JsonRpcResponse,System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Serializes the specified response to the specified stream as an asynchronous operation.</summary>
+            <param name="response">The response to serialize.</param>
+            <param name="stream">The stream for a JSON string.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON string representation of the specified response.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="response" /> or <paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during response serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeResponses(System.Collections.Generic.IReadOnlyList{System.Data.JsonRpc.JsonRpcResponse})">
+            <summary>Serializes the specified collection of responses to a JSON string.</summary>
+            <param name="responses">The collection of responses to serialize.</param>
+            <returns>A JSON string representation of the specified collection of responses.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="responses" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during responses serialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeResponses(System.Collections.Generic.IReadOnlyList{System.Data.JsonRpc.JsonRpcResponse},System.IO.Stream)">
+            <summary>Serializes the specified collection of responses to the specified stream.</summary>
+            <param name="responses">The collection of responses to serialize.</param>
+            <param name="stream">The stream for a JSON string.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="responses" /> or <paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during responses serialization.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.SerializeResponsesAsync(System.Collections.Generic.IReadOnlyList{System.Data.JsonRpc.JsonRpcResponse},System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Serializes the specified collection of responses to the specified stream as an asynchronous operation.</summary>
+            <param name="responses">The collection of responses to serialize.</param>
+            <param name="stream">The stream for a JSON string.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON string representation of the specified collection of responses.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="responses" /> or <paramref name="stream" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.Data.JsonRpc.JsonRpcException">An error occurred during responses serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:System.Data.JsonRpc.JsonRpcSerializer.Dispose">
+            <summary>Clears response bindings of the current instance.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcSerializer.RequestContracts">
+            <summary>Gets the request contracts.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcSerializer.ResponseContracts">
+            <summary>Gets the response contracts.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcSerializer.DynamicResponseBindings">
+            <summary>Gets the dynamic response bindings.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcSerializer.StaticResponseBindings">
+            <summary>Gets the static response bindings.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcSerializer.DefaultErrorDataType">
+            <summary>Gets or sets a type of error data for deserializing an unsuccessful response with empty identifier.</summary>
+        </member>
+        <member name="P:System.Data.JsonRpc.JsonRpcSerializer.CompatibilityLevel">
+            <summary>Gets or sets the protocol compatibility level.</summary>
+        </member>
+    </members>
+</doc>
