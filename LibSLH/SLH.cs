@@ -28,7 +28,6 @@ namespace LibSLH
             Server = server;
 
             Server.ReceivedMessage += HandleReceivedMessage;
-            Client.Self.IM += HandleInstantMessage;
 
             SessionId = new Guid().ToString();
 
@@ -50,20 +49,13 @@ namespace LibSLH
             JSONRPCSerializer = new JsonRpcSerializer();
         }
 
-        private void HandleInstantMessage(object sender, InstantMessageEventArgs e)
-        {
-            if (e.IM.Dialog == InstantMessageDialog.RequestTeleport)
-            {
-                Client.Self.TeleportLureRespond(e.IM.FromAgentID, e.IM.IMSessionID, true);
-            }
-        }
-
         [JsonRpcMethod("Client/Eval")]
-        public string Client_Eval(string member_path, object[] args = null)
+        public async Task<object> Client_Eval(string member_path, object[] args = null)
         {
             try
             {
-                return Utility.EvalMemberPath(Client, member_path, args, false).ToString();
+                var result = await Utility.EvalMemberPath(Client, member_path, args, false);
+                return result;
             }
             catch (Exception ex)
             {
@@ -113,7 +105,7 @@ namespace LibSLH
         }
 
         [JsonRpcMethod("Client/Eval/AddEventHandler")]
-        public void Client_AddEventHandler(string event_member_path, string remote_id)
+        public async void Client_AddEventHandler(string event_member_path, string remote_id)
         {
             try
             {
@@ -127,7 +119,7 @@ namespace LibSLH
 
                 if (RemoteEventHandlers.ContainsKey(remote_id))
                     throw new ArgumentException($"{nameof(RemoteEventHandlers)} contains identical key");
-                var bound_event_info = Utility.EvalMemberInfoPath(Client, event_member_path, null, false);
+                var bound_event_info = await Utility.EvalMemberInfoPath(Client, event_member_path, null, false);
                 var target = bound_event_info.Target;
                 var event_info = bound_event_info.MemberInfo as EventInfo;
                 Delegate handler = null;
@@ -159,11 +151,11 @@ namespace LibSLH
         }
 
         [JsonRpcMethod("Client/Eval/RemoveEventHandler")]
-        public void Client_RemoveEventHandler(string event_member_path, string remote_id)
+        public async void Client_RemoveEventHandler(string event_member_path, string remote_id)
         {
             try
             {
-                var bound_event_info = Utility.EvalMemberInfoPath(Client, event_member_path, null, false);
+                var bound_event_info = await Utility.EvalMemberInfoPath(Client, event_member_path, null, false);
                 var target = bound_event_info.Target;
                 var event_info = bound_event_info.MemberInfo as EventInfo;
 
@@ -198,101 +190,7 @@ namespace LibSLH
 
         public void Dispose()
         {
-            //Client.Self.ChatFromSimulator -= HandleChatFromSimulator;
-            //Client.Avatars.ViewerEffect -= HandleViewerEffect;
-            //Client.GetObjectNearestPoint -= HandleGetObjectNearestPoint;
-            //Client.DebugObject -= HandleDebugObject;
-
             Server.ReceivedMessage -= HandleReceivedMessage;
         }
-
-        #region deleteme
-
-        private void HandleChatFromSimulator(object sender, OpenMetaverse.ChatEventArgs args)
-        {
-            switch (args.Type)
-            {
-                default:
-                    var json_data = new JsonData
-                    {
-                        ["_event"] = "ChatFromSimulator",
-                        ["AudibleLevel"] = (int)args.AudibleLevel,
-                        ["FromName"] = args.FromName,
-                        ["Message"] = args.Message,
-                        ["OwnerID"] = args.OwnerID.ToString(),
-                        ["Position"] = args.Position.ToString(),
-                        ["Simulator"] = new JsonData
-                        {
-                            ["Name"] = args.Simulator.Name,
-                            ["Handle"] = args.Simulator.Handle
-                        },
-                        ["SourceType"] = (int)args.SourceType,
-                        ["Type"] = (int)args.Type
-                    };
-                    Server.BroadcastMessage(json_data);
-                    break;
-
-                case ChatType.StartTyping:
-                case ChatType.StopTyping:
-                    break;
-            }
-        }
-
-        private void HandleViewerEffect(object sender, ViewerEffectEventArgs args)
-        {
-            var json_data = new JsonData
-            {
-                ["_event"] = "ViewerEffect",
-                ["Duration"] = args.Duration,
-                ["EffectId"] = args.EffectID.ToString(),
-                ["SourceId"] = args.SourceID.ToString(),
-                ["TargetID"] = args.TargetID.ToString(),
-                ["TargetPosition"] = args.TargetPosition.ToString(),
-                ["Type"] = (int)args.Type
-            };
-            Server.BroadcastMessage(json_data);
-        }
-
-        private void HandleGetObjectNearestPoint(object sender, SLHClient.GetObjectNearestPointEventArgs args)
-        {
-            var json_data = new JsonData()
-            {
-                ["_event"] = "GetObjectNearestPoint",
-                ["Simulator"] = new JsonData()
-                {
-                    ["Handle"] = args.Simulator.Handle,
-                    ["Name"] = args.Simulator.Name
-                },
-                ["Object"] = new JsonData()
-                {
-                    ["LocalID"] = args.Prim.LocalID
-                }
-            };
-        }
-
-        private void HandleDebugObject(object sender, SLHClient.DebugObjectEventArgs args)
-        {
-            var primitive = Client.Objects.GetPrimitive(args.Simulator, args.LocalID, UUID.Zero, false);
-            if (primitive != null)
-            {
-                var face_textures = primitive.Textures.FaceTextures;
-                var diffuse = face_textures
-                    .Select(f => f.TextureID)
-                    .Select(t => t.ToString());
-
-                var json_data = new JsonData
-                {
-                    ["_event"] = "DebugObject",
-                    ["Textures"] = new JsonData
-                    {
-                        ["Diffuse"] = JsonMapper.ToJson(diffuse)
-                    }
-                };
-
-                Server.BroadcastMessage(json_data);
-            }
-        }
-
-        #endregion deleteme
     }
 }

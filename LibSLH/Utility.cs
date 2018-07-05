@@ -1,9 +1,11 @@
-﻿using System;
+﻿using OpenMetaverse;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace LibSLH
 {
@@ -50,7 +52,11 @@ namespace LibSLH
             if (@object is long)
                 return (Int64)@object;
 
-            return TypeDescriptor.GetConverter(type).ConvertFrom(@object);
+            var converter = TypeDescriptor.GetConverter(type);
+            if (converter.CanConvertFrom(@object.GetType()))
+                return TypeDescriptor.GetConverter(type).ConvertFrom(@object);
+
+            return @object; // Good luck...
         }
 
         public class BoundMemberInfo
@@ -65,14 +71,14 @@ namespace LibSLH
             }
         }
 
-        public static object EvalMemberPath(
+        public static async Task<object> EvalMemberPath(
             object target,
             string member_path,
             object[] args,
             bool set_value)
         {
             var method_path_elements = member_path.Split('.');
-            return EvalMemberPath(
+            return await EvalMemberPath(
                 target,
                 method_path_elements.ToList(),
                 method_path_elements.FirstOrDefault(),
@@ -87,14 +93,14 @@ namespace LibSLH
                 BindingFlags.InvokeMethod);
         }
 
-        public static BoundMemberInfo EvalMemberInfoPath(
+        public static async Task<BoundMemberInfo> EvalMemberInfoPath(
             object target,
             string member_path,
             object[] args,
             bool set_value)
         {
             var method_path_elements = member_path.Split('.');
-            return EvalMemberInfoPath(
+            return await EvalMemberInfoPath(
                 target,
                 method_path_elements.ToList(),
                 method_path_elements.FirstOrDefault(),
@@ -109,7 +115,7 @@ namespace LibSLH
                 BindingFlags.InvokeMethod);
         }
 
-        public static BoundMemberInfo EvalMemberInfoPath(
+        public static async Task<BoundMemberInfo> EvalMemberInfoPath(
             object target,
             List<String> member_path_elements,
             string current_member_path,
@@ -145,25 +151,25 @@ namespace LibSLH
 
                     default:
                     case MemberTypes.Method:
-                        member_target = ((MethodInfo)member_info).Invoke(target, null);
+                        member_target = await Task.Run(() => ((MethodInfo)member_info).Invoke(target, null));
                         break;
                 }
 
                 var next_member_path_elements = member_path_elements.Skip(1).ToList();
                 var next_member_path = current_member_path + "." + next_member_path_elements.First();
-                return EvalMemberInfoPath(member_target, next_member_path_elements, next_member_path, args, set_value, flags);
+                return await EvalMemberInfoPath(member_target, next_member_path_elements, next_member_path, args, set_value, flags);
             }
         }
 
-        public static object EvalMemberPath(
-        object target,
-        List<String> member_path_elements,
-        string current_member_path,
-        object[] args,
-        bool set_value,
-        BindingFlags flags)
+        public static async Task<object> EvalMemberPath(
+            object target,
+            List<String> member_path_elements,
+            string current_member_path,
+            object[] args,
+            bool set_value,
+            BindingFlags flags)
         {
-            var bound_member_info = EvalMemberInfoPath(target, member_path_elements, current_member_path, args, set_value, flags);
+            var bound_member_info = await EvalMemberInfoPath(target, member_path_elements, current_member_path, args, set_value, flags);
             var member_target = bound_member_info.Target;
             var member_info = bound_member_info.MemberInfo;
             switch (member_info.MemberType)
@@ -190,8 +196,10 @@ namespace LibSLH
                         .Zip(args, (p, a) => new { p, a })
                         .Select(e => Convert(e.p.ParameterType, e.a))
                         .ToArray();
-                    return method_info.Invoke(member_target, args_converted);
-
+                    var result = method_info.Invoke(member_target, args_converted);
+                    if (result is Task)
+                        return await (dynamic)result;
+                    return result;
             }
             return args[0];
         }
@@ -219,6 +227,12 @@ namespace LibSLH
             // Typed wrapper
             var wrapped = Expression.Lambda(delegate_type, invoke, event_handler_parameter_expressions);
             return wrapped.Compile();
+        }
+
+        public static Vector3d RegionHandleToGlobalCoordinates(ulong handle)
+        {
+            Utils.LongToUInts(handle, out uint x, out uint y);
+            return new Vector3d(x, y, 0.0);
         }
 
         /*

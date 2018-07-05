@@ -1,10 +1,6 @@
 ﻿using Newtonsoft.Json;
 using OpenMetaverse;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LibSLH
 {
@@ -18,15 +14,12 @@ namespace LibSLH
         /// <summary>
         /// Only want to deserialize
         /// </summary>
-        public override bool CanWrite { get { return false; } }
+        public override bool CanWrite { get { return true; } }
 
-        /// <summary>
-        /// Placeholder for inheritance -- not called because <see cref="CanWrite"/> returns false
-        /// </summary>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            // since CanWrite returns false, we don't need to implement this
-            throw new NotImplementedException();
+            // Unused if CanWrite == false
+            writer.WriteValue(value.ToString());
         }
 
         /// <summary>
@@ -38,9 +31,20 @@ namespace LibSLH
         /// </returns>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            return (reader.TokenType == JsonToken.Integer)
-                ? Convert.ToInt32(reader.Value)     // convert to Int32 instead of Int64
-                : serializer.Deserialize(reader);   // default to regular deserialization
+            if (reader.TokenType == JsonToken.Integer)
+                return Convert.ToInt32(reader.Value);     // convert to Int32 instead of Int64
+            if (reader.TokenType == JsonToken.String)
+            {
+                {
+                    if (UUID.TryParse((string)reader.Value, out UUID result))
+                        return result;
+                }
+                {
+                    if (Vector3.TryParse((string)reader.Value, out Vector3 result))
+                        return result;
+                }
+            }
+            return serializer.Deserialize(reader);   // default to regular deserialization
         }
 
         /// <summary>
@@ -62,15 +66,17 @@ namespace LibSLH
                 objectType == typeof(Single) ||
                 objectType == typeof(Double) ||
                 objectType == typeof(int) ||
+                // Custom types
+                objectType == typeof(UUID) ||
+                objectType == typeof(Vector3) ||
+                objectType.IsSubclassOf(typeof(Primitive)) ||
                 // need this last one in case we "weren't given" the type
                 // and this will be accounted for by `ReadJson` checking tokentype
                 objectType == typeof(object);
 
             return !non_converting && converting;
-                
-                
         }
 
-        #endregion
+        #endregion Overrides of JsonConverter
     }
 }
