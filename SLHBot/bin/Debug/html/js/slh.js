@@ -11,6 +11,22 @@ function uuid() {
     return uuid;
 }
 
+async function OpenWebSocket(address, protocols) {
+    return new Promise(async (resolve, reject) => {
+        let socket = new WebSocket(address, protocols);
+        socket.onerror = (e) => {
+            socket.onerror = null;
+            socket.onopen = null;
+            reject(socket);
+        };
+        socket.onopen = (e) => {
+            socket.onerror = null;
+            socket.onopen = null;
+            resolve(socket);
+        };
+    });
+}
+
 class StandaloneProperties {
     constructor() {
         this._Sockets = {};
@@ -21,12 +37,12 @@ class StandaloneProperties {
             if (socket instanceof WebSocket) {
                 socket.onerror = (e) => {
                     socket.onerror = null;
-                    socket.onopen = null;
+                    socket.onclose = null;
                     reject(socket);
                 };
                 socket.onclose = (e) => {
                     socket.onerror = null;
-                    socket.onopen = null;
+                    socket.onclose = null;
                     resolve(socket);
                 };
                 socket.close();
@@ -36,12 +52,12 @@ class StandaloneProperties {
             }
         });
     }
-    async ReopenNamedSocket(name, address) {
-        if (typeof address === typeof undefined)
-            address = name;
+    async ReopenNamedSocket(address, protocols, name) {
+        if (typeof name === typeof undefined)
+            name = address;
         return new Promise(async (resolve, reject) => {
             await this.CloseNamedSocket(name);
-            let socket = new WebSocket(address);
+            let socket = new WebSocket(address, protocols);
             this._Sockets[name] = socket;
             socket.onerror = (e) => {
                 socket.onerror = null;
@@ -65,18 +81,21 @@ class SLHClient {
         this._Remote = remote;
         this._Socket = socket;
 
-        socket.onmessage = function (event) {
+        socket.onmessage = (event) => {
             remote.receive(event.data);
         };
 
-        remote.setTransmitter(function (message, next) {
+        remote.setTransmitter((message, next) => {
             try {
+                console.log(message);
                 socket.send(message);
                 return next(false);
             } catch (e) {
                 return next(true);
             }
         });
+
+        socket.onopen = (event) => console.log(socket);
     }
     Eval (expression, ...args) {
         let promise = new Promise((resolve, reject) => {
