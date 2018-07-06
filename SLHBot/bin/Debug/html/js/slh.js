@@ -87,15 +87,12 @@ class SLHClient {
 
         remote.setTransmitter((message, next) => {
             try {
-                console.log(message);
                 socket.send(message);
                 return next(false);
             } catch (e) {
                 return next(true);
             }
         });
-
-        socket.onopen = (event) => console.log(socket);
     }
     Eval (expression, ...args) {
         let promise = new Promise((resolve, reject) => {
