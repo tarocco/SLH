@@ -22,18 +22,23 @@ namespace LibSLH
             //Self.IM += HandleInstantMessage;
         }
 
+        private readonly object ObjectUpdateLock = new object();
         private void HandleObjectUpdate(object sender, PrimEventArgs e)
         {
-            if (e.IsAttachment || e.Prim.IsAttachment)
-                return;
-            var prim = e.Prim;
-            if (ObjectPositions.TryGetValue(prim, out float[] old_point))
-                ObjectProximalLookup.RemoveAt(old_point);
-            var position = prim.Position;
-            //Logger.Log(position, Helpers.LogLevel.Debug);
-            float[] new_point = new float[] { position.X, position.Y, position.Z };
-            ObjectPositions[prim] = new_point;
-            ObjectProximalLookup.Add(new_point, prim);
+            // Locked since the ObjectUpdate event is raised from the networking thread
+            lock (ObjectUpdateLock)
+            {
+                if (e.IsAttachment || e.Prim.IsAttachment)
+                    return;
+                var prim = e.Prim;
+                if (ObjectPositions.TryGetValue(prim, out float[] old_point))
+                    ObjectProximalLookup.RemoveAt(old_point);
+                var position = prim.Position;
+                //Logger.Log(position, Helpers.LogLevel.Debug);
+                float[] new_point = new float[] { position.X, position.Y, position.Z };
+                ObjectPositions[prim] = new_point;
+                ObjectProximalLookup.Add(new_point, prim);
+            }
         }
 
         public async Task<List<DirectoryManager.AgentSearchData>> SearchAvatarsByName(string avatar_name)
