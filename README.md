@@ -1,12 +1,12 @@
 Second Life Helper (SLH)
 =====
 
-A helper bot for Second Life built on [libopenmetaverse](https://github.com/openmetaversefoundation/libopenmetaverse) with WebSockets capability.
+A helper bot for Second Life built on [libopenmetaverse](https://github.com/openmetaversefoundation/libopenmetaverse) with remote scripting capability.
 
 Features
 -----
 
-- JSON-RPC over WebSockets
+- JSON-RPC client interface over WebSockets
 
 Planned
 -----
