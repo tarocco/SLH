@@ -14,26 +14,12 @@ class Standalone {
     //get Remote() { return this._Remote; }
     get Client() { return this._Client; }
 
-    constructor(ws_address) {
-        var socket = new WebSocket(ws_address, "SLH-Message-Protocol-0001");
+    constructor()
+    {
         var remote = new JRPC({ client: true });
-
-        this._Socket = socket;
         this._Remote = remote;
-
-        socket.onmessage = function (event) {
-            remote.receive(event.data);
-        };
-
-        remote.setTransmitter(function (message, next) {
-            try {
-                socket.send(message);
-                return next(false);
-            } catch (e) {
-                return next(true);
-            }
-        });
-        this._Client = {
+        
+        var client = {
             Eval: function (expression, ...args) {
                 var promise = new Promise(function (resolve, reject) {
                     remote.call("Client/Eval", [expression, args], function (error, result) { resolve(result); });
@@ -66,23 +52,54 @@ class Standalone {
                 return promise;
             }
         };
+        this._Client = client;
+    }
+    
+    async Connect(ws_address) {
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) { 
+            var socket = new WebSocket(ws_address, "SLH-Message-Protocol-0001");
+            _this._Socket = socket;
+            
+            var previous_onopen = socket.onopen;
+            socket.onopen = function (event) {
+                resolve(true);
+                socket.onopen = previous_onopen;
+                if(typeof previous_onopen === "function")
+                    previous_onopen(event);
+            };
+            
+            var remote = _this._Remote;
+
+            socket.onmessage = function (event) {
+                remote.receive(event.data);
+            };
+
+            remote.setTransmitter(function (message, next) {
+                try {
+                    socket.send(message);
+                    return next(false);
+                } catch (e) {
+                    return next(true);
+                }
+            });
+        });
+        return promise;
     }
 
     Close() {
-        this._Remote.close();
+        var remote = this._Remote;
+        var socket = this._Socket;
+        var promise = new Promise(function (resolve, reject) {
+            var previous_onclose = socket.onclose;
+            socket.onclose = function (event) {
+                resolve(true);
+                socket.onclose = previous_onclose;
+                if(typeof previous_onclose === "function")
+                    previous_onclose(event);
+            };
+            socket.close();
+        });
+        return promise;
     }
-}
-
-var SLH = new Standalone("wss://localhost:5756");
-
-function SendChatMessage() {
-    var message = document.getElementById("ChatInput").value;
-    SLH.Client.Eval("Say", message);
-    return false;
-}
-
-function TeleportToAvatar() {
-    var avatar_name = document.getElementById("AvatarNameInput").value;
-    SLH.Client.Eval("OnTeleportToAvatar", avatar_name);
-    return false;
 }
