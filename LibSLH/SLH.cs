@@ -1,13 +1,11 @@
 ﻿using AustinHarris.JsonRpc;
 using Fleck;
-using LitJson;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using OpenMetaverse;
 using System;
 using System.Collections.Generic;
 using System.Data.JsonRpc;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -50,12 +48,13 @@ namespace LibSLH
         }
 
         [JsonRpcMethod("Client/Eval")]
-        public async Task<object> Client_Eval(string member_path, object[] args = null)
+        public object Client_Eval(string member_path, object[] args = null)
         {
             try
             {
-                var result = await Utility.EvalMemberPath(Client, member_path, args, false);
-                return result;
+                // JSON-RPC service will call Client_Eval from inside a Task, so this method block
+                // Call EcalMemberPath synchronously (Task.Result)
+                return Utility.EvalMemberPath(Client, member_path, args, false).Result;
             }
             catch (Exception ex)
             {
