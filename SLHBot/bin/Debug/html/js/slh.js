@@ -14,11 +14,10 @@ class Standalone {
     //get Remote() { return this._Remote; }
     get Client() { return this._Client; }
 
-    constructor()
-    {
+    constructor() {
         var remote = new JRPC({ client: true });
         this._Remote = remote;
-        
+
         var client = {
             Eval: function (expression, ...args) {
                 var promise = new Promise(function (resolve, reject) {
@@ -54,21 +53,21 @@ class Standalone {
         };
         this._Client = client;
     }
-    
+
     async Connect(ws_address) {
         var _this = this;
-        var promise = new Promise(function (resolve, reject) { 
+        var promise = new Promise(function (resolve, reject) {
             var socket = new WebSocket(ws_address, "SLH-Message-Protocol-0001");
             _this._Socket = socket;
-            
+
             var previous_onopen = socket.onopen;
             socket.onopen = function (event) {
                 resolve(true);
                 socket.onopen = previous_onopen;
-                if(typeof previous_onopen === "function")
+                if (typeof previous_onopen === "function")
                     previous_onopen(event);
             };
-            
+
             var remote = _this._Remote;
 
             socket.onmessage = function (event) {
@@ -95,7 +94,7 @@ class Standalone {
             socket.onclose = function (event) {
                 resolve(true);
                 socket.onclose = previous_onclose;
-                if(typeof previous_onclose === "function")
+                if (typeof previous_onclose === "function")
                     previous_onclose(event);
             };
             socket.close();
