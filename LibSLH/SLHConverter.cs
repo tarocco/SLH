@@ -1,62 +1,82 @@
-﻿using Newtonsoft.Json;
-using OpenMetaverse;
+﻿using OpenMetaverse;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
 
 namespace LibSLH
 {
-    public class SLHConverter : JsonConverter
+    class SLHConverter : TypeConverter
     {
-        public override bool CanWrite { get { return true; } }
+        private readonly List<SLHClient> _Clients = new List<SLHClient>();
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        /// <summary>
+        /// Thread safe access to <see cref="_Clients"/>
+        /// </summary>
+        public IEnumerable<SLHClient> Clients
         {
-            if (value is Simulator)
-                writer.WriteValue(((Simulator)value).Handle);
-            else
-                writer.WriteValue(value.ToString());
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            if (reader.TokenType == JsonToken.Integer)
-                return Convert.ToInt32(reader.Value); // convert to Int32 instead of Int64
-            if (reader.TokenType == JsonToken.String)
+            get
             {
-                {
-                    if (UUID.TryParse((string)reader.Value, out UUID result))
-                        return result;
-                }
-                {
-                    if (Vector3.TryParse((string)reader.Value, out Vector3 result))
-                        return result;
-                }
+                lock (_Clients)
+                    return _Clients.ToArray();
             }
-            return serializer.Deserialize(reader);
         }
 
-        public override bool CanConvert(Type objectType)
+        public void AddClient(SLHClient client)
         {
-            var non_converting =
-                // Custom types
-                objectType == typeof(Avatar) ||
-                objectType.IsSubclassOf(typeof(GridClient)) ||
-                objectType == typeof(AgentManager);
+            lock (_Clients)
+                _Clients.Add(client);
+        }
 
-            var converting =
-                objectType == typeof(Int32) ||
-                objectType == typeof(Int64) ||
-                objectType == typeof(Single) ||
-                objectType == typeof(Double) ||
-                objectType == typeof(int) ||
-                // Custom types
-                objectType == typeof(UUID) ||
-                objectType == typeof(Vector3) ||
-                objectType.IsSubclassOf(typeof(Primitive)) ||
-                objectType == typeof(Simulator) ||
-                // Default
-                objectType == typeof(object);
+        public bool RemoveClient(SLHClient client)
+        {
+            lock (_Clients)
+                return _Clients.Remove(client);
+        }
 
-            return !non_converting && converting;
+        protected IEnumerable<Simulator> ClientSimulators => Clients.SelectMany(c => c.Network.Simulators);
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+        {
+            var can_convert =
+                destinationType.IsEnum ||
+                destinationType == typeof(Simulator) ||
+                destinationType == typeof(Int32) ||
+                destinationType == typeof(Int64) ||
+                destinationType == typeof(UInt32) ||
+                destinationType == typeof(UInt64);
+            return can_convert || base.CanConvertTo(context, destinationType);
+        }
+
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        {
+            if (destinationType.IsEnum)
+            {
+                if (value is string)
+                    return Enum.Parse(destinationType, (string)value);
+                return Enum.ToObject(destinationType, value);
+            }
+
+            unchecked
+            {
+                if (destinationType == typeof(Simulator) && (value is Int64 || value is UInt64))
+                {
+                    if (Utility.Fudge(value, out UInt64 handle))
+                        return ClientSimulators.FirstOrDefault(s => s.Handle == handle);
+                }
+
+                if (Utility.Fudge(value, out object output, destinationType))
+                    return output;
+            }
+
+            // Try it the other way around!
+            var converter = TypeDescriptor.GetConverter(destinationType);
+            if (converter.CanConvertFrom(value.GetType()))
+                return TypeDescriptor.GetConverter(destinationType).ConvertFrom(value);
+
+            return value;
+
+            //return base.ConvertTo(context, culture, value, destinationType);
         }
     }
 }

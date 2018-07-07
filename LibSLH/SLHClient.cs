@@ -23,6 +23,10 @@ namespace LibSLH
         }
 
         private readonly object ObjectUpdateLock = new object();
+
+        private readonly Dictionary<UUID, uint> LocalIdTable = new Dictionary<UUID, uint>();
+        private readonly Dictionary<uint, ulong> SimLookupTable = new Dictionary<uint, ulong>();
+
         private void HandleObjectUpdate(object sender, PrimEventArgs e)
         {
             // Locked since the ObjectUpdate event is raised from the networking thread
@@ -38,6 +42,11 @@ namespace LibSLH
                 float[] new_point = new float[] { position.X, position.Y, position.Z };
                 ObjectPositions[prim] = new_point;
                 ObjectProximalLookup.Add(new_point, prim);
+
+                // TODO: is there a more efficient way of keeping track of these?
+                // TODO: prune disconnected simulators
+                LocalIdTable[e.Prim.ID] = e.Prim.LocalID;
+                SimLookupTable[e.Prim.LocalID] = e.Simulator.Handle;
             }
         }
 
@@ -69,6 +78,13 @@ namespace LibSLH
             return Network.Simulators.SelectMany(s => s.ObjectsAvatars.Copy().Values);
         }
 
+        public uint GetPrimLocalId(UUID id)
+        {
+            if (LocalIdTable.TryGetValue(id, out uint value))
+                return value;
+            return default(uint);
+        }
+
         public Primitive GetObjectNearestPoint(Vector3 point)
         {
             var point_key = new[] { point.X, point.Y, point.Z };
@@ -77,7 +93,7 @@ namespace LibSLH
             return prim;
         }
 
-        public Primitive.ObjectProperties RequestObjectPropertiesFamilyBlocking(UUID object_id)
+        protected Primitive.ObjectProperties RequestObjectPropertiesFamilyBlocking(UUID object_id)
         {
             var simulator = Network.CurrentSim; // TODO
             var reset = new AutoResetEvent(false);
@@ -112,6 +128,8 @@ namespace LibSLH
         {
             Self.InstantMessage(recipient, message);
         }
+
+
 
         public async void OnTeleportToAvatar(string avatar_name)
         {

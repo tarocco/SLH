@@ -20,6 +20,13 @@ namespace LibSLH
         private readonly string SessionId;
         private readonly JsonRpcSerializer JSONRPCSerializer;
 
+        private static SLHConverter Converter;
+
+        static SLH()
+        {
+            Converter = new SLHConverter();
+        }
+
         public SLH(SLHClient client, SLHWebSocketServer server)
         {
             Client = client;
@@ -27,12 +34,16 @@ namespace LibSLH
 
             Server.ReceivedMessage += HandleReceivedMessage;
 
+            Client.Network.LoginProgress += HandleLoginProgress;
+            Client.Network.LoggedOut += HandleLoggedOut;
+
             SessionId = new Guid().ToString();
 
             // Important step
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
-                Converters = new[] { new SLHConverter() },
+                //Converters = new[] { JSONConverter }, // Pass the shared (static) converter
+                Converters = new[] { new SLHJSONConverter() },
                 Error = delegate (object sender, ErrorEventArgs args)
                 {
                     // SERIALIZE ALL THE THINGS!
@@ -47,6 +58,29 @@ namespace LibSLH
             JSONRPCSerializer = new JsonRpcSerializer();
         }
 
+        private static void AddClientToConverter(SLHClient client)
+        {
+            Converter.AddClient(client);
+        }
+
+        private static bool RemoveClientFromConverter(SLHClient client)
+        {
+            return Converter.RemoveClient(client);
+        }
+
+        private void HandleLoggedOut(object sender, LoggedOutEventArgs e)
+        {
+            RemoveClientFromConverter(Client);
+        }
+
+        private void HandleLoginProgress(object sender, LoginProgressEventArgs e)
+        {
+            if (e.Status == LoginStatus.Success)
+            {
+                AddClientToConverter(Client);
+            }
+        }
+
         [JsonRpcMethod("Client/Eval")]
         public object Client_Eval(string member_path, object[] args = null)
         {
@@ -54,7 +88,8 @@ namespace LibSLH
             {
                 // JSON-RPC service will call Client_Eval from inside a Task, so this method block
                 // Call EcalMemberPath synchronously (Task.Result)
-                return Utility.EvalMemberPath(Client, member_path, args, false).Result;
+                var result = Utility.EvalMemberPath(Client, member_path, args, false, Converter).Result;
+                return result;
             }
             catch (Exception ex)
             {
@@ -68,7 +103,7 @@ namespace LibSLH
         {
             try
             {
-                return Utility.EvalMemberPath(Client, member_path, new object[] { value }, true);
+                return Utility.EvalMemberPath(Client, member_path, new object[] { value }, true, Converter).Result;
             }
             catch (Exception ex)
             {
@@ -118,7 +153,7 @@ namespace LibSLH
 
                 if (RemoteEventHandlers.ContainsKey(remote_id))
                     throw new ArgumentException($"{nameof(RemoteEventHandlers)} contains identical key");
-                var bound_event_info = await Utility.EvalMemberInfoPath(Client, event_member_path, null, false);
+                var bound_event_info = await Utility.EvalMemberInfoPath(Client, event_member_path, null, false, Converter);
                 var target = bound_event_info.Target;
                 var event_info = bound_event_info.MemberInfo as EventInfo;
                 Delegate handler = null;
@@ -154,7 +189,7 @@ namespace LibSLH
         {
             try
             {
-                var bound_event_info = await Utility.EvalMemberInfoPath(Client, event_member_path, null, false);
+                var bound_event_info = await Utility.EvalMemberInfoPath(Client, event_member_path, null, false, Converter);
                 var target = bound_event_info.Target;
                 var event_info = bound_event_info.MemberInfo as EventInfo;
 
@@ -190,6 +225,7 @@ namespace LibSLH
         public void Dispose()
         {
             Server.ReceivedMessage -= HandleReceivedMessage;
+            RemoveClientFromConverter(Client);
         }
     }
 }

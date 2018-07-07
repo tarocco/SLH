@@ -37,28 +37,6 @@ namespace LibSLH
             return password;
         }
 
-        public static object Convert(Type type, object @object)
-        {
-            if (type.IsEnum)
-            {
-                if (@object is string)
-                    return Enum.Parse(type, (string)@object);
-                return Enum.ToObject(type, @object);
-            }
-
-            if (@object is int)
-                return (Int32)@object;
-
-            if (@object is long)
-                return (Int64)@object;
-
-            var converter = TypeDescriptor.GetConverter(type);
-            if (converter.CanConvertFrom(@object.GetType()))
-                return TypeDescriptor.GetConverter(type).ConvertFrom(@object);
-
-            return @object; // Good luck...
-        }
-
         public class BoundMemberInfo
         {
             public readonly object Target;
@@ -75,7 +53,8 @@ namespace LibSLH
             object target,
             string member_path,
             object[] args,
-            bool set_value)
+            bool set_value,
+            TypeConverter argument_converter)
         {
             var method_path_elements = member_path.Split('.');
             return await EvalMemberPath(
@@ -90,22 +69,22 @@ namespace LibSLH
                 BindingFlags.SetField |
                 BindingFlags.GetProperty |
                 BindingFlags.SetProperty |
-                BindingFlags.InvokeMethod);
+                BindingFlags.InvokeMethod,
+                argument_converter);
         }
 
         public static async Task<BoundMemberInfo> EvalMemberInfoPath(
             object target,
             string member_path,
             object[] args,
-            bool set_value)
+            bool set_value,
+            TypeConverter argument_converter)
         {
             var method_path_elements = member_path.Split('.');
             return await EvalMemberInfoPath(
                 target,
                 method_path_elements.ToList(),
                 method_path_elements.FirstOrDefault(),
-                args,
-                set_value,
                 BindingFlags.Public |
                 BindingFlags.Instance |
                 BindingFlags.GetField |
@@ -119,8 +98,6 @@ namespace LibSLH
             object target,
             List<String> member_path_elements,
             string current_member_path,
-            object[] args,
-            bool set_value,
             BindingFlags flags)
         {
             if (member_path_elements.Count == 0)
@@ -157,19 +134,16 @@ namespace LibSLH
 
                 var next_member_path_elements = member_path_elements.Skip(1).ToList();
                 var next_member_path = current_member_path + "." + next_member_path_elements.First();
-                return await EvalMemberInfoPath(member_target, next_member_path_elements, next_member_path, args, set_value, flags);
+                return await EvalMemberInfoPath(member_target, next_member_path_elements, next_member_path, flags);
             }
         }
 
         public static async Task<object> EvalMemberPath(
-            object target,
-            List<String> member_path_elements,
-            string current_member_path,
+            BoundMemberInfo bound_member_info,
             object[] args,
             bool set_value,
-            BindingFlags flags)
+            TypeConverter argument_converter)
         {
-            var bound_member_info = await EvalMemberInfoPath(target, member_path_elements, current_member_path, args, set_value, flags);
             var member_target = bound_member_info.Target;
             var member_info = bound_member_info.MemberInfo;
             switch (member_info.MemberType)
@@ -194,7 +168,7 @@ namespace LibSLH
                     var parameters = method_info.GetParameters();
                     var args_converted = parameters
                         .Zip(args, (p, a) => new { p, a })
-                        .Select(e => Convert(e.p.ParameterType, e.a))
+                        .Select(e => argument_converter.ConvertTo(e.a, e.p.ParameterType))
                         .ToArray();
                     var result = method_info.Invoke(member_target, args_converted);
                     if (result is Task)
@@ -202,6 +176,19 @@ namespace LibSLH
                     return result;
             }
             return args[0];
+        }
+
+        public static async Task<object> EvalMemberPath(
+            object target,
+            List<String> member_path_elements,
+            string current_member_path,
+            object[] args,
+            bool set_value,
+            BindingFlags flags,
+            TypeConverter argument_converter)
+        {
+            var bound_member_info = await EvalMemberInfoPath(target, member_path_elements, current_member_path, flags);
+            return await EvalMemberPath(bound_member_info, args, set_value, argument_converter);
         }
 
         public static Delegate WrapDynamicDelegate(Type delegate_type, DynamicDelegate dynamic_delegate)
@@ -234,5 +221,97 @@ namespace LibSLH
             Utils.LongToUInts(handle, out uint x, out uint y);
             return new Vector3d(x, y, 0.0);
         }
+
+        #region Fudge
+        public static bool Fudge(object input, out Int32 output)
+        {
+            switch(input)
+            {
+                case char i: output = (Int32) i; return true;
+                case byte i: output = (Int32) i; return true;
+                case int i: output = (Int32) i; return true;
+                case uint i: output = (Int32) i; return true;
+                case long i: output = (Int32) i; return true;
+                case ulong i: output = (Int32) i; return true;
+            }
+            output = default(Int32);
+            return false;
+        }
+
+        public static bool Fudge(object input, out Int64 output)
+        {
+            switch (input)
+            {
+                case char i: output = (Int64)i; return true;
+                case byte i: output = (Int64)i; return true;
+                case int i: output = (Int64)i; return true;
+                case uint i: output = (Int64)i; return true;
+                case long i: output = (Int64)i; return true;
+                case ulong i: output = (Int64)i; return true;
+            }
+            output = default(Int64);
+            return false;
+        }
+
+        public static bool Fudge(object input, out UInt32 output)
+        {
+            switch (input)
+            {
+                case char i: output = (UInt32)i; return true;
+                case byte i: output = (UInt32)i; return true;
+                case int i: output = (UInt32)i; return true;
+                case uint i: output = (UInt32)i; return true;
+                case long i: output = (UInt32)i; return true;
+                case ulong i: output = (UInt32)i; return true;
+            }
+            output = default(UInt32);
+            return false;
+        }
+
+        public static bool Fudge(object input, out UInt64 output)
+        {
+            switch (input)
+            {
+                case char i: output = (UInt64)i; return true;
+                case byte i: output = (UInt64)i; return true;
+                case int i: output = (UInt64)i; return true;
+                case uint i: output = (UInt64)i; return true;
+                case long i: output = (UInt64)i; return true;
+                case ulong i: output = (UInt64)i; return true;
+            }
+            output = default(UInt64);
+            return false;
+        }
+
+        public static bool Fudge(object input, out object output, Type return_type)
+        {
+            if(return_type == typeof(Int32))
+            {
+                bool result = Fudge(input, out Int32 i);
+                output = i;
+                return result;
+            }
+            if (return_type == typeof(Int64))
+            {
+                bool result = Fudge(input, out Int64 i);
+                output = i;
+                return result;
+            }
+            if (return_type == typeof(UInt32))
+            {
+                bool result = Fudge(input, out UInt32 i);
+                output = i;
+                return result;
+            }
+            if (return_type == typeof(Int64))
+            {
+                bool result = Fudge(input, out Int64 i);
+                output = i;
+                return result;
+            }
+            output = default(object);
+            return false;
+        }
+        #endregion
     }
 }

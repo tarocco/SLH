@@ -145,6 +145,7 @@
     <Compile Include="SLH.cs" />
     <Compile Include="SLHClient.cs" />
     <Compile Include="SLHConverter.cs" />
+    <Compile Include="SLHJSONConverter.cs" />
     <Compile Include="SLHWebSocketServer.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
