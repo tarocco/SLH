@@ -150,8 +150,14 @@ namespace SLHBot
             SLHClient client = null;
             var logged_out = false;
 
+            #endregion Client
+
             if (dummy_session)
+            {
                 Logger.Log("Using dummy session mode without Second Life client.", Helpers.LogLevel.Warning);
+                while (!logged_out)
+                    Thread.Sleep(100);
+            }
             else
             {
                 client = new SLHClient
@@ -196,27 +202,17 @@ namespace SLHBot
                 if (!IsNullOrEmpty(login_uri))
                     login_params.URI = login_uri;
 
-                client.Network.BeginLogin(login_params);
-
-                while (login_status != LoginStatus.Success)
-                {
-                    if (login_status == LoginStatus.Failed)
-                        throw new LoginFailedException(login_fail_reason);
-                    Thread.Sleep(200);
-                }
-            }
-
-            #endregion Client
-
-            if (dummy_session)
-            {
-                while (!logged_out)
-                    Thread.Sleep(100);
-            }
-            else
-            {
                 using (var slh = new SLH(client, server))
                 {
+                    client.Network.BeginLogin(login_params);
+
+                    while (login_status != LoginStatus.Success)
+                    {
+                        if (login_status == LoginStatus.Failed)
+                            throw new LoginFailedException(login_fail_reason);
+                        Thread.Sleep(200);
+                    }
+
                     while (!logged_out)
                     {
                         if (shutting_down)
