@@ -26,6 +26,7 @@ namespace LibSLH
 
         private readonly Dictionary<UUID, uint> LocalIdTable = new Dictionary<UUID, uint>();
         private readonly Dictionary<uint, ulong> SimLookupTable = new Dictionary<uint, ulong>();
+        private readonly HashLookup<uint, uint> LinkSetLookupTable = new HashLookup<uint, uint>();
 
         private void HandleObjectUpdate(object sender, PrimEventArgs e)
         {
@@ -47,7 +48,17 @@ namespace LibSLH
                 // TODO: prune disconnected simulators
                 LocalIdTable[e.Prim.ID] = e.Prim.LocalID;
                 SimLookupTable[e.Prim.LocalID] = e.Simulator.Handle;
+
+                if (e.Prim.ParentID == 0)
+                    LinkSetLookupTable.Add(e.Prim.LocalID, e.Prim.LocalID);
+                else
+                    LinkSetLookupTable.Add(e.Prim.ParentID, e.Prim.LocalID);
             }
+        }
+
+        public IEnumerable<uint> GetLinkSetLocalIds(uint parent_id)
+        {
+            return LinkSetLookupTable[parent_id];
         }
 
         public async Task<List<DirectoryManager.AgentSearchData>> SearchAvatarsByName(string avatar_name)
