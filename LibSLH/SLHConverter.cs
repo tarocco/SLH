@@ -72,7 +72,7 @@ namespace LibSLH
             // Try it the other way around!
             var converter = TypeDescriptor.GetConverter(destinationType);
             if (converter.CanConvertFrom(value.GetType()))
-                return TypeDescriptor.GetConverter(destinationType).ConvertFrom(value);
+                return converter.ConvertFrom(value);
 
             return value;
 
