@@ -11,49 +11,109 @@ namespace LibSLH
 {
     public class SLHClient : GridClient
     {
-        private KdTree<float, Primitive> ObjectProximalLookup;
-        private Dictionary<Primitive, float[]> ObjectPositions;
-
-        public SLHClient() : base()
-        {
-            ObjectProximalLookup = new KdTree<float, Primitive>(3, new FloatMath(), AddDuplicateBehavior.Update);
-            ObjectPositions = new Dictionary<Primitive, float[]>();
-            Objects.ObjectUpdate += HandleObjectUpdate;
-            //Self.IM += HandleInstantMessage;
-        }
+        private KdTree<float, uint> ObjectProximalLookup;
+        private Dictionary<uint, float[]> ObjectPositions;
 
         private readonly object ObjectUpdateLock = new object();
 
-        private readonly Dictionary<UUID, uint> LocalIdTable = new Dictionary<UUID, uint>();
+        private readonly Dictionary<UUID, uint> UUIDToLocalIdTable = new Dictionary<UUID, uint>();
+        private readonly Dictionary<uint, UUID> LocalIdToUUIDTable = new Dictionary<uint, UUID>();
+
         private readonly Dictionary<uint, ulong> SimLookupTable = new Dictionary<uint, ulong>();
         private readonly HashLookup<uint, uint> LinkSetLookupTable = new HashLookup<uint, uint>();
+        private readonly Dictionary<uint, uint> LinkSetParentTable = new Dictionary<uint, uint>();
+
+        public SLHClient() : base()
+        {
+            ObjectProximalLookup = new KdTree<float, uint>(3, new FloatMath(), AddDuplicateBehavior.Update);
+            ObjectPositions = new Dictionary<uint, float[]>();
+            Objects.ObjectUpdate += HandleObjectUpdate;
+            Objects.ObjectPropertiesUpdated += HandleObjectPropertiesUpdated;
+            Objects.KillObject += HandleKillObject;
+            Objects.KillObjects += HandleKillObjects;
+            //Self.IM += HandleInstantMessage;
+        }
+
+        private void OnUpdateObjects(Primitive prim, ulong simulator_handle)
+        {
+            if (prim.OwnerID == UUID.Zero)
+                return;
+            // Use lock because the ObjectUpdate event is raised from the networking thread
+            lock (ObjectUpdateLock)
+            {
+                if (!prim.IsAttachment)
+                {
+                    if (ObjectPositions.TryGetValue(prim.LocalID, out float[] old_point))
+                        ObjectProximalLookup.RemoveAt(old_point);
+                    var position = prim.Position;
+                    //Logger.Log(position, Helpers.LogLevel.Debug);
+                    float[] new_point = new float[] { position.X, position.Y, position.Z };
+                    ObjectPositions[prim.LocalID] = new_point;
+                    ObjectProximalLookup.Add(new_point, prim.LocalID);
+                }
+
+                UUIDToLocalIdTable[prim.ID] = prim.LocalID;
+                LocalIdToUUIDTable[prim.LocalID] = prim.ID;
+
+                SimLookupTable[prim.LocalID] = simulator_handle;
+
+                if (prim.ParentID == 0)
+                    LinkSetLookupTable.Add(prim.LocalID, prim.LocalID);
+                else
+                {
+                    LinkSetLookupTable.Add(prim.ParentID, prim.LocalID);
+                    LinkSetParentTable[prim.LocalID] = prim.ParentID;
+                }
+            }
+        }
+
+        private void OnKillObject(uint local_id)
+        {
+            lock (ObjectUpdateLock)
+            {
+                var children = LinkSetLookupTable[local_id].Where(i => i != local_id);
+                foreach (var id in children)
+                    OnKillObject(id);
+
+                if (ObjectPositions.TryGetValue(local_id, out float[] old_point))
+                {
+                    ObjectProximalLookup.RemoveAt(old_point);
+                    ObjectPositions.Remove(local_id);
+                }
+
+                if (LocalIdToUUIDTable.TryGetValue(local_id, out UUID uuid))
+                {
+                    UUIDToLocalIdTable.Remove(uuid);
+                    LocalIdToUUIDTable.Remove(local_id);
+                }
+
+                SimLookupTable.Remove(local_id);
+
+                LinkSetLookupTable.RemoveAll(local_id);
+                LinkSetParentTable.Remove(local_id);
+            }
+        }
+
+        private void HandleKillObject(object sender, KillObjectEventArgs e)
+        {
+            OnKillObject(e.ObjectLocalID);
+        }
+
+        private void HandleKillObjects(object sender, KillObjectsEventArgs e)
+        {
+            foreach (var id in e.ObjectLocalIDs)
+                OnKillObject(id);
+        }
 
         private void HandleObjectUpdate(object sender, PrimEventArgs e)
         {
-            // Locked since the ObjectUpdate event is raised from the networking thread
-            lock (ObjectUpdateLock)
-            {
-                if (e.IsAttachment || e.Prim.IsAttachment)
-                    return;
-                var prim = e.Prim;
-                if (ObjectPositions.TryGetValue(prim, out float[] old_point))
-                    ObjectProximalLookup.RemoveAt(old_point);
-                var position = prim.Position;
-                //Logger.Log(position, Helpers.LogLevel.Debug);
-                float[] new_point = new float[] { position.X, position.Y, position.Z };
-                ObjectPositions[prim] = new_point;
-                ObjectProximalLookup.Add(new_point, prim);
-
-                // TODO: is there a more efficient way of keeping track of these?
-                // TODO: prune disconnected simulators
-                LocalIdTable[e.Prim.ID] = e.Prim.LocalID;
-                SimLookupTable[e.Prim.LocalID] = e.Simulator.Handle;
-
-                if (e.Prim.ParentID == 0)
-                    LinkSetLookupTable.Add(e.Prim.LocalID, e.Prim.LocalID);
-                else
-                    LinkSetLookupTable.Add(e.Prim.ParentID, e.Prim.LocalID);
-            }
+            OnUpdateObjects(e.Prim, e.Simulator.Handle);
+            //Objects.SelectObject(e.Simulator, e.Prim.LocalID, true);
+        }
+        private void HandleObjectPropertiesUpdated(object sender, ObjectPropertiesUpdatedEventArgs e)
+        {
+            OnUpdateObjects(e.Prim, e.Simulator.Handle);
+            //Objects.SelectObject(e.Simulator, e.Prim.LocalID, true);
         }
 
         public IEnumerable<uint> GetLinkSetLocalIds(uint parent_id)
@@ -91,12 +151,12 @@ namespace LibSLH
 
         public uint GetPrimLocalId(UUID id)
         {
-            if (LocalIdTable.TryGetValue(id, out uint value))
+            if (UUIDToLocalIdTable.TryGetValue(id, out uint value))
                 return value;
             return default(uint);
         }
 
-        public Primitive GetObjectNearestPoint(Vector3 point)
+        public uint GetObjectNearestPoint(Vector3 point)
         {
             var point_key = new[] { point.X, point.Y, point.Z };
             var node = ObjectProximalLookup.GetNearestNeighbours(point_key, 1);
@@ -139,8 +199,6 @@ namespace LibSLH
         {
             Self.InstantMessage(recipient, message);
         }
-
-
 
         public async void OnTeleportToAvatar(string avatar_name)
         {
