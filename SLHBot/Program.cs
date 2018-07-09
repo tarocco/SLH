@@ -8,6 +8,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using Unosquare.Labs.EmbedIO;
 using static LibSLH.Utility;
 using static System.String;
 
@@ -61,23 +62,28 @@ namespace SLHBot
 
         private static void Main(string[] args)
         {
-            var shutting_down = false;
+            var shut_down_source = new CancellationTokenSource();
+            //var shutting_down = false;
             Console.CancelKeyPress += (object sender, ConsoleCancelEventArgs e) =>
             {
                 e.Cancel = true;
-                shutting_down = true;
+                shut_down_source.Cancel();
             };
 
             #region Setup
 
             var arguments = new Arguments(args);
 
-            var config_file_path = arguments["config-file"];
+            var config_file_path = arguments["config-file"] ?? "config.json";
             var config_arg_text = arguments["config"];
             string config_file_text = null;
 
             if (!IsNullOrEmpty(config_file_path))
+            {
+                if (!File.Exists(config_file_path))
+                    throw new FileNotFoundException("Config file does not exist at path", config_file_path);
                 config_file_text = File.ReadAllText(config_file_path);
+            }
 
             JsonData config = new JsonData();
 
@@ -139,8 +145,10 @@ namespace SLHBot
 
             if (!IsNullOrEmpty(standalone_binding_address))
             {
-                var standalone = new Standalone();
-                standalone.Run(standalone_binding_address);
+                WebServer
+                    .Create(standalone_binding_address)
+                    .WithStaticFolderAt("html")
+                    .RunAsync(shut_down_source.Token);
             }
 
             #endregion Standalone
@@ -155,7 +163,7 @@ namespace SLHBot
             if (dummy_session)
             {
                 Logger.Log("Using dummy session mode without Second Life client.", Helpers.LogLevel.Warning);
-                while (!logged_out)
+                while (!shut_down_source.IsCancellationRequested)
                     Thread.Sleep(100);
             }
             else
@@ -215,7 +223,7 @@ namespace SLHBot
 
                     while (!logged_out)
                     {
-                        if (shutting_down)
+                        if (shut_down_source.IsCancellationRequested)
                             client.Network?.Logout();
                         Thread.Sleep(100);
                     }
