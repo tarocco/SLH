@@ -31,13 +31,14 @@ namespace LibSLH
             Objects.ObjectPropertiesUpdated += HandleObjectPropertiesUpdated;
             Objects.KillObject += HandleKillObject;
             Objects.KillObjects += HandleKillObjects;
+            Objects.ObjectDataBlockUpdate += HandleObjectDataBlockUpdate;
             //Self.IM += HandleInstantMessage;
         }
 
         private void OnUpdateObjects(Primitive prim, ulong simulator_handle)
         {
-            if (prim.OwnerID == UUID.Zero)
-                return;
+            //if (prim.OwnerID == UUID.Zero)
+            //    return;
             // Use lock because the ObjectUpdate event is raised from the networking thread
             lock (ObjectUpdateLock)
             {
@@ -114,6 +115,10 @@ namespace LibSLH
         {
             OnUpdateObjects(e.Prim, e.Simulator.Handle);
             //Objects.SelectObject(e.Simulator, e.Prim.LocalID, true);
+        }
+        private void HandleObjectDataBlockUpdate(object sender, ObjectDataBlockUpdateEventArgs e)
+        {
+            OnUpdateObjects(e.Prim, e.Simulator.Handle);
         }
 
         public IEnumerable<uint> GetLinkSetLocalIds(uint parent_id)
