@@ -13,7 +13,9 @@ namespace LibSLH
         {
             get
             {
-                return _Dictionary[key];
+                if (_Dictionary.TryGetValue(key, out HashSet<TElement> results))
+                    return results;
+                return new TElement[] { };
             }
         }
 
@@ -61,6 +63,11 @@ namespace LibSLH
                 return true;
             }
             return false;
+        }
+
+        public bool RemoveAll(TKey key)
+        {
+            return _Dictionary.Remove(key);
         }
     }
 }
