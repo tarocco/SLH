@@ -1,8 +1,7 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenMetaverse;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace LibSLH
 {
@@ -14,6 +13,8 @@ namespace LibSLH
         {
             if (value is Simulator)
                 writer.WriteValue(((Simulator)value).Handle);
+            else if (value.GetType().IsArray)
+                writer.WriteValue(value); // Use default behavior
             else
                 writer.WriteValue(value.ToString());
         }
