@@ -35,12 +35,54 @@ namespace LibSLH
             //Self.IM += HandleInstantMessage;
         }
 
+        public int NumberOfTrackedObjects
+        {
+            get
+            {
+                lock (ObjectUpdateLock)
+                    return LocalIdToUUIDTable.Count;
+            }
+        }
+
+        public bool Self_Movement_LookDirection(Vector3 target, bool send_update)
+        {
+            if (Settings.SEND_AGENT_UPDATES)
+            {
+                var parent_rotation = Quaternion.Identity;
+                if (Self.SittingOn > 0)
+                {
+                    if (!Network.CurrentSim.ObjectsPrimitives.ContainsKey(Self.SittingOn))
+                    {
+                        Logger.Log("Attempted LookDirection but parent prim is not in dictionary", Helpers.LogLevel.Warning, this);
+                        return false;
+                    }
+                    else parent_rotation = Network.CurrentSim.ObjectsPrimitives[Self.SittingOn].Rotation;
+                }
+
+                var between = Vector3.RotationBetween(Vector3.UnitX, Vector3.Normalize(target - Self.SimPosition));
+                var rot = between * (Quaternion.Identity / parent_rotation);
+
+                //Self.Movement.Camera.LookAt(Self.SimPosition, target);
+                Self.Movement.Camera.LookAt(Self.SimPosition, Self.SimPosition + target);
+
+                if (send_update)
+                    Self.Movement.SendUpdate();
+
+                return true;
+            }
+            else
+            {
+                Logger.Log("Attempted LookDirection but agent updates are disabled", Helpers.LogLevel.Warning, this);
+                return false;
+            }
+        }
+
         private void OnUpdateObjects(Primitive prim, ulong simulator_handle)
         {
             //if (prim.OwnerID == UUID.Zero)
             //    return;
             // Use lock because the ObjectUpdate event is raised from the networking thread
-            lock (ObjectUpdateLock)
+            //lock (ObjectUpdateLock)
             {
                 if (!prim.IsAttachment)
                 {
@@ -70,7 +112,7 @@ namespace LibSLH
 
         private void OnKillObject(uint local_id)
         {
-            lock (ObjectUpdateLock)
+            //lock (ObjectUpdateLock)
             {
                 var children = LinkSetLookupTable[local_id].Where(i => i != local_id);
                 foreach (var id in children)
@@ -97,28 +139,45 @@ namespace LibSLH
 
         private void HandleKillObject(object sender, KillObjectEventArgs e)
         {
-            OnKillObject(e.ObjectLocalID);
+            lock (ObjectUpdateLock)
+            {
+                OnKillObject(e.ObjectLocalID);
+            }
         }
 
         private void HandleKillObjects(object sender, KillObjectsEventArgs e)
         {
-            foreach (var id in e.ObjectLocalIDs)
-                OnKillObject(id);
+            lock (ObjectUpdateLock)
+            {
+                foreach (var id in e.ObjectLocalIDs)
+                    OnKillObject(id);
+            }
         }
 
         private void HandleObjectUpdate(object sender, PrimEventArgs e)
         {
-            OnUpdateObjects(e.Prim, e.Simulator.Handle);
-            //Objects.SelectObject(e.Simulator, e.Prim.LocalID, true);
+            lock (ObjectUpdateLock)
+            {
+                OnUpdateObjects(e.Prim, e.Simulator.Handle);
+                //Objects.SelectObject(e.Simulator, e.Prim.LocalID, true);
+            }
         }
+
         private void HandleObjectPropertiesUpdated(object sender, ObjectPropertiesUpdatedEventArgs e)
         {
-            OnUpdateObjects(e.Prim, e.Simulator.Handle);
-            //Objects.SelectObject(e.Simulator, e.Prim.LocalID, true);
+            lock (ObjectUpdateLock)
+            {
+                OnUpdateObjects(e.Prim, e.Simulator.Handle);
+                //Objects.SelectObject(e.Simulator, e.Prim.LocalID, true);
+            }
         }
+
         private void HandleObjectDataBlockUpdate(object sender, ObjectDataBlockUpdateEventArgs e)
         {
-            OnUpdateObjects(e.Prim, e.Simulator.Handle);
+            lock (ObjectUpdateLock)
+            {
+                OnUpdateObjects(e.Prim, e.Simulator.Handle);
+            }
         }
 
         public IEnumerable<uint> GetLinkSetLocalIds(uint parent_id)
