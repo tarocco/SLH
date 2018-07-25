@@ -9,6 +9,8 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Unosquare.Labs.EmbedIO;
+using Unosquare.Labs.EmbedIO.Constants;
+using Unosquare.Labs.EmbedIO.Modules;
 using static LibSLH.Utility;
 using static System.String;
 
@@ -141,18 +143,6 @@ namespace SLHBot
 
             #endregion Server
 
-            #region Standalone
-
-            if (!IsNullOrEmpty(standalone_binding_address))
-            {
-                WebServer
-                    .Create(standalone_binding_address)
-                    .WithStaticFolderAt("html")
-                    .RunAsync(shut_down_source.Token);
-            }
-
-            #endregion Standalone
-
             #region Client
 
             SLHClient client = null;
@@ -162,6 +152,18 @@ namespace SLHBot
 
             if (dummy_session)
             {
+                #region Standalone
+
+                if (!IsNullOrEmpty(standalone_binding_address))
+                {
+                    var standalone = WebServer
+                        .Create(standalone_binding_address)
+                        .WithStaticFolderAt("html");
+                    standalone.RunAsync(shut_down_source.Token);
+                }
+
+                #endregion Standalone
+
                 Logger.Log("Using dummy session mode without Second Life client.", Helpers.LogLevel.Warning);
                 while (!shut_down_source.IsCancellationRequested)
                     Thread.Sleep(100);
@@ -178,6 +180,22 @@ namespace SLHBot
                         Task = 1000000,
                     }
                 };
+
+                #region Standalone
+
+                if (!IsNullOrEmpty(standalone_binding_address))
+                {
+                    var standalone = WebServer
+                        .Create(standalone_binding_address, RoutingStrategy.Regex)
+                        .WithStaticFolderAt("html");
+                    // TODO: move APIs to a separate, non-standalone web server
+                    var web_api_module = new WebApiModule();
+                    web_api_module.RegisterController(() => new TextureWebAPIController(client));
+                    standalone.RegisterModule(web_api_module);
+                    standalone.RunAsync(shut_down_source.Token);
+                }
+
+                #endregion Standalone
 
                 var login_status = LoginStatus.None;
                 string login_fail_reason = null;
