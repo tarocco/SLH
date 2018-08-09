@@ -3,6 +3,7 @@ using LibSLH;
 using LitJson;
 using OpenMetaverse;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -94,7 +95,7 @@ namespace SLHBot
 
             if (!IsNullOrEmpty(config_arg_text))
             {
-                var arg_config = JsonMapper.ToObject(config_arg_text);
+                var arg_config = JsonMapper.ToObject<Dictionary<string, JsonData>>(config_arg_text);
                 foreach (var key in arg_config.Keys)
                     config[key] = arg_config[key];
             }

@@ -32,7 +32,7 @@ namespace LibSLH
                 if (download != null)
                 {
                     //OpenJPEG.DecodeToImage(download.AssetData, out managed_image, out image);
-                    image = CSJ2K.J2kImage.FromBytes(download.AssetData);
+                    image = CSJ2K.J2kImage.FromBytes(download.AssetData).As<Image>();
                 }
                 else
                 {
@@ -44,7 +44,7 @@ namespace LibSLH
                             if (state == TextureRequestState.Finished)
                             {
                                 //OpenJPEG.DecodeToImage(asset.AssetData, out managed_image, out image);
-                                image = CSJ2K.J2kImage.FromBytes(asset.AssetData);
+                                image = CSJ2K.J2kImage.FromBytes(asset.AssetData).As<Image>();
                                 reset.Set();
                             }
                         }

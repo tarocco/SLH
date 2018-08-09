@@ -57,17 +57,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\libopenmetaverse\OpenMetaverse.StructuredData\OpenMetaverse.StructuredData.csproj">
-      <Project>{1d49a5a1-80c4-49ad-a1c4-9beb968b3363}</Project>
-      <Name>OpenMetaverse.StructuredData</Name>
+    <ProjectReference Include="..\libremetaverse\LibreMetaverse.StructuredData\LibreMetaverse.StructuredData.csproj">
+      <Project>{89d7a3e5-0000-0000-0000-000000000000}</Project>
+      <Name>LibreMetaverse.StructuredData</Name>
     </ProjectReference>
-    <ProjectReference Include="..\libopenmetaverse\OpenMetaverseTypes\OpenMetaverseTypes.csproj">
-      <Project>{595d201f-599f-49e7-ac02-07f2676e8bc6}</Project>
-      <Name>OpenMetaverseTypes</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\libopenmetaverse\OpenMetaverse\OpenMetaverse.csproj">
-      <Project>{bf2c97f8-f2c0-4235-9533-2d4c4cfaefcd}</Project>
-      <Name>OpenMetaverse</Name>
+    <ProjectReference Include="..\libremetaverse\LibreMetaverse\LibreMetaverse.csproj">
+      <Project>{27c70f3a-0000-0000-0000-000000000000}</Project>
+      <Name>LibreMetaverse</Name>
     </ProjectReference>
     <ProjectReference Include="..\LibSLH\LibSLH.csproj">
       <Project>{c23f7230-f882-4f38-894b-88a897f125f8}</Project>

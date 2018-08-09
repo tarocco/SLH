@@ -164,25 +164,21 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\libopenmetaverse\CSJ2K\CSJ2K.csproj">
-      <Project>{92cef2f8-37db-4826-bc41-6e66d5b0e6d2}</Project>
+    <ProjectReference Include="..\libremetaverse\CSJ2K\CSJ2K.csproj">
+      <Project>{c276743b-0000-0000-0000-000000000000}</Project>
       <Name>CSJ2K</Name>
     </ProjectReference>
-    <ProjectReference Include="..\libopenmetaverse\OpenMetaverse.StructuredData\OpenMetaverse.StructuredData.csproj">
-      <Project>{1d49a5a1-80c4-49ad-a1c4-9beb968b3363}</Project>
-      <Name>OpenMetaverse.StructuredData</Name>
+    <ProjectReference Include="..\libremetaverse\LibreMetaverse.StructuredData\LibreMetaverse.StructuredData.csproj">
+      <Project>{89d7a3e5-0000-0000-0000-000000000000}</Project>
+      <Name>LibreMetaverse.StructuredData</Name>
     </ProjectReference>
-    <ProjectReference Include="..\libopenmetaverse\OpenMetaverse.Utilities\OpenMetaverse.Utilities.csproj">
-      <Project>{2bf2a655-ad76-49dd-88c8-3e85e97f4239}</Project>
-      <Name>OpenMetaverse.Utilities</Name>
+    <ProjectReference Include="..\libremetaverse\LibreMetaverseTypes\LibreMetaverse.Types.csproj">
+      <Project>{b37b02ad-0000-0000-0000-000000000000}</Project>
+      <Name>LibreMetaverse.Types</Name>
     </ProjectReference>
-    <ProjectReference Include="..\libopenmetaverse\OpenMetaverseTypes\OpenMetaverseTypes.csproj">
-      <Project>{595d201f-599f-49e7-ac02-07f2676e8bc6}</Project>
-      <Name>OpenMetaverseTypes</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\libopenmetaverse\OpenMetaverse\OpenMetaverse.csproj">
-      <Project>{bf2c97f8-f2c0-4235-9533-2d4c4cfaefcd}</Project>
-      <Name>OpenMetaverse</Name>
+    <ProjectReference Include="..\libremetaverse\LibreMetaverse\LibreMetaverse.csproj">
+      <Project>{27c70f3a-0000-0000-0000-000000000000}</Project>
+      <Name>LibreMetaverse</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

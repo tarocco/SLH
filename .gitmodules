@@ -1,3 +1,3 @@
-[submodule "libopenmetaverse"]
-	path = libopenmetaverse
-	url = git@github.com:Tarocco/libopenmetaverse.git
+[submodule "libremetaverse"]
+	path = libremetaverse
+	url = https://github.com/Tarocco/libremetaverse.git
