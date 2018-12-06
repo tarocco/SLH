@@ -1,7 +1,7 @@
 Second Life Helper (SLH)
 =====
 
-A helper bot for Second Life built on [libopenmetaverse](https://github.com/openmetaversefoundation/libopenmetaverse) with remote scripting capability.
+A helper bot for Second Life built on [libremetaverse](https://github.com/cinderblocks/libremetaverse) with remote scripting capability.
 
 Features
 -----
