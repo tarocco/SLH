@@ -11,3 +11,18 @@ Sandbox
 !SLHBot/bin/*
 !SLHBot/bin/*/html/
 !SLHBot/bin/*/html/**
+
+# Python
+.venv
+.pyc
+__pycache__
+
+# This is what version control is for
+.ipynb_checkpoints
+
+# SLHStudio
+SLHStudio/img_cache
+SLHStudio/config.json
+
+# OpenMetaverse/LibreMetaverse
+openmetaverse_data

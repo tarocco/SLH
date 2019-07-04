@@ -187,11 +187,11 @@ namespace SLHBot
                 if (!IsNullOrEmpty(standalone_binding_address))
                 {
                     var standalone = WebServer
-                        .Create(standalone_binding_address, RoutingStrategy.Regex)
+                        .Create(standalone_binding_address)
                         .WithStaticFolderAt("html");
                     // TODO: move APIs to a separate, non-standalone web server
                     var web_api_module = new WebApiModule();
-                    web_api_module.RegisterController(() => new TextureWebAPIController(client));
+                    web_api_module.RegisterController((cx) => new TextureWebAPIController(cx, client));
                     standalone.RegisterModule(web_api_module);
                     standalone.RunAsync(shut_down_source.Token);
                 }

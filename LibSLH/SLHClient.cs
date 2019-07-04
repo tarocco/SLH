@@ -1,8 +1,10 @@
 ﻿using KdTree;
 using KdTree.Math;
 using OpenMetaverse;
+using OpenMetaverse.Assets;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -220,6 +222,13 @@ namespace LibSLH
             return default(uint);
         }
 
+        public uint GetParentLocalId(uint local_id)
+        {
+            if (LinkSetParentTable.TryGetValue(local_id, out uint parent_id))
+                return parent_id;
+            return default(uint);
+        }
+
         public uint GetObjectNearestPoint(Vector3 point)
         {
             var point_key = new[] { point.X, point.Y, point.Z };
@@ -282,6 +291,37 @@ namespace LibSLH
             {
                 Logger.Log("Could not teleport to avatar.", Helpers.LogLevel.Error, ex);
             }
+        }
+
+        public Image GetTextureByUUID(UUID uuid)
+        {
+            var download = Assets.Cache.GetCachedImage(uuid);
+            //ManagedImage managed_image;
+            Image image = null;
+            if (download != null)
+            {
+                //OpenJPEG.DecodeToImage(download.AssetData, out managed_image, out image);
+                image = CSJ2K.J2kImage.FromBytes(download.AssetData).As<Image>();
+            }
+            else
+            {
+                var reset = new AutoResetEvent(false);
+                TextureDownloadCallback callback = (TextureRequestState state, AssetTexture asset) =>
+                {
+                    if (state == TextureRequestState.Finished)
+                    {
+                        if (state == TextureRequestState.Finished)
+                        {
+                            //OpenJPEG.DecodeToImage(asset.AssetData, out managed_image, out image);
+                            image = CSJ2K.J2kImage.FromBytes(asset.AssetData).As<Image>();
+                            reset.Set();
+                        }
+                    }
+                };
+                Assets.RequestImage(uuid, ImageType.Normal, callback);
+                reset.WaitOne(Settings.TRANSFER_TIMEOUT);
+            }
+            return image;
         }
     }
 }

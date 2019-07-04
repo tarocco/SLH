@@ -5,7 +5,7 @@ using Newtonsoft.Json.Serialization;
 using OpenMetaverse;
 using System;
 using System.Collections.Generic;
-using System.Data.JsonRpc;
+using Anemonis.JsonRpc;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -19,6 +19,7 @@ namespace LibSLH
         private readonly SLHWebSocketServer Server;
         private readonly string SessionId;
         private readonly JsonRpcSerializer JSONRPCSerializer;
+        private readonly JsonRpcService RPCService;
 
         private static SLHConverter Converter;
 
@@ -134,7 +135,7 @@ namespace LibSLH
 
         private string CreateRequestJSON(string method_name, params object[] arguments)
         {
-            var request = new JsonRpcRequest(method_name, arguments);
+            var request = new JsonRpcRequest(0L, method_name, arguments);
             return JSONRPCSerializer.SerializeRequest(request);
         }
 

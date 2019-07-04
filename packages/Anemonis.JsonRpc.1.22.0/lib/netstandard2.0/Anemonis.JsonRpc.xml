@@ -1,0 +1,847 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Anemonis.JsonRpc</name>
+    </assembly>
+    <members>
+        <member name="T:Anemonis.JsonRpc.IJsonRpcContractResolver">
+            <summary>Defines a JSON-RPC message contract resolver.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.IJsonRpcContractResolver.GetRequestContract(System.String)">
+            <summary>Gets the JSON-RPC request contract.</summary>
+            <param name="method">The name of a JSON-RPC method.</param>
+            <returns>The corresponding request contract or <see langword="null" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.IJsonRpcContractResolver.GetResponseContract(Anemonis.JsonRpc.JsonRpcId@)">
+            <summary>Gets the JSON-RPC response contract.</summary>
+            <param name="messageId">The JSON-RPC message identifier.</param>
+            <returns>The corresponding response contract or <see langword="null" />.</returns>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcCompatibilityLevel">
+            <summary>Represents JSON-RPC protocol compatibility level.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcCompatibilityLevel.Default">
+            <summary>Compatibility level that matches the highest JSON-RPC protocol version.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcCompatibilityLevel.Level1">
+            <summary>Compatibility level that matches JSON-RPC protocol version 1.0.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcCompatibilityLevel.Level2">
+            <summary>Compatibility level that matches JSON-RPC protocol version 2.0.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcContractResolver">
+            <summary>Represents a JSON-RPC message contract resolver.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.#ctor">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcContractResolver" /> class.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.AddRequestContract(System.String,Anemonis.JsonRpc.JsonRpcRequestContract)">
+            <summary>Adds the specified JSON-RPC request contract.</summary>
+            <param name="method">The name of a JSON-RPC method.</param>
+            <param name="contract">The JSON-RPC request contract.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> or <paramref name="contract" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.AddResponseContract(System.String,Anemonis.JsonRpc.JsonRpcResponseContract)">
+            <summary>Adds the specified JSON-RPC response contract.</summary>
+            <param name="method">The name of a JSON-RPC method.</param>
+            <param name="contract">The JSON-RPC response contract.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> or <paramref name="contract" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.AddResponseContract(Anemonis.JsonRpc.JsonRpcId@,Anemonis.JsonRpc.JsonRpcResponseContract)">
+            <summary>Adds the specified JSON-RPC response contract.</summary>
+            <param name="messageId">The JSON-RPC message identifier.</param>
+            <param name="contract">The JSON-RPC response contract.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="contract" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.AddResponseBinding(Anemonis.JsonRpc.JsonRpcId@,System.String)">
+            <summary>Adds the specified JSON-RPC response binding.</summary>
+            <param name="messageId">The JSON-RPC message identifier.</param>
+            <param name="method">The name of a JSON-RPC method.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.RemoveRequestContract(System.String)">
+            <summary>Removes the corresponding JSON-RPC request contract.</summary>
+            <param name="method">The name of a JSON-RPC method.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.RemoveResponseContract(System.String)">
+            <summary>Removes the corresponding JSON-RPC response contract.</summary>
+            <param name="method">The name of a JSON-RPC method.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.RemoveResponseContract(Anemonis.JsonRpc.JsonRpcId@)">
+            <summary>Removes the corresponding JSON-RPC response contract.</summary>
+            <param name="messageId">The JSON-RPC message identifier.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.RemoveResponseBinding(Anemonis.JsonRpc.JsonRpcId@)">
+            <summary>Removes the corresponding JSON-RPC response binding.</summary>
+            <param name="messageId">The JSON-RPC message identifier.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.ClearRequestContracts">
+            <summary>Removes all JSON-RPC request contracts.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.ClearResponseContracts">
+            <summary>Removes all JSON-RPC response contracts.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcContractResolver.ClearResponseBindings">
+            <summary>Removes all JSON-RPC response bindings.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcData`1">
+            <summary>Represents a JSON-RPC data deserialization result.</summary>
+            <typeparam name="T">The type of the JSON-RPC message.</typeparam>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcData`1.IsBatch">
+            <summary>Gets a value indicating whether the data is a batch.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcData`1.Item">
+            <summary>Gets a JSON-RPC message deserialization result for non-batch data.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcData`1.Items">
+            <summary>Gets a collection of JSON-RPC message deserialization results for batch data.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcError">
+            <summary>Represents a JSON-RPC error.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcError.#ctor(System.Int64,System.String)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcError" /> class.</summary>
+            <param name="code">The number that indicates the error type that occurred.</param>
+            <param name="message">The string providing a short description of the error.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="message" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="code" /> is outside the allowable range.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcError.#ctor(System.Int64,System.String,System.Object)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcError" /> class.</summary>
+            <param name="code">The number that indicates the error type that occurred.</param>
+            <param name="message">The string providing a short description of the error.</param>
+            <param name="data">The primitive or structured value that contains additional information about the error.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="message" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="code" /> is outside the allowable range.</exception>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcError.Code">
+            <summary>Gets a number that indicates the error type that occurred.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcError.Message">
+            <summary>Gets a string providing a short description of the error.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcError.Data">
+            <summary>Gets an optional value that contains additional information about the error.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcError.HasData">
+            <summary>Gets a value indicating whether the additional information about the error is specified.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcErrorCode">
+            <summary>Defines standard JSON-RPC error codes and code ranges.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcErrorCode.InvalidFormat">
+            <summary>The error code which specifies, that the provided JSON is invalid.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcErrorCode.InvalidOperation">
+            <summary>The error code which specifies, that an error occurred during processing the message.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcErrorCode.InvalidParameters">
+            <summary>The error code which specifies, that the specified method parameters are invalid.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcErrorCode.InvalidMethod">
+            <summary>The error code which specifies, that the specified method does not exist or is not available.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcErrorCode.InvalidMessage">
+            <summary>The error code which specifies, that the provided message is not valid.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcErrorCode.ServerErrorsLowerBoundary">
+            <summary>The lower boundary of the implementation-defined server error code range.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcErrorCode.ServerErrorsUpperBoundary">
+            <summary>The upper boundary of the implementation-defined server error code range.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcErrorCode.SystemErrorsLowerBoundary">
+            <summary>The lower boundary of the system error code range.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcErrorCode.SystemErrorsUpperBoundary">
+            <summary>The upper boundary of the system error code range.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcException">
+            <summary>Represents an error that occurs during JSON-RPC message processing.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcException.#ctor">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcException" /> class.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcException.#ctor(System.String)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcException" /> class.</summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcException.#ctor(System.String,System.Exception)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcException" /> class.</summary>
+            <param name="message">The message that describes the error.</param>
+            <param name="innerException">The exception that is the cause of the current exception.</param>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcId">
+            <summary>Represents a JSON-RPC message identifier.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.#ctor(System.String)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> structure.</summary>
+            <param name="value">The identifier value.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="value" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.#ctor(System.Int64)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> structure.</summary>
+            <param name="value">The identifier value.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.#ctor(System.Double)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> structure.</summary>
+            <param name="value">The identifier value.</param>
+            <exception cref="T:System.ArgumentException"><paramref name="value" /> is <see cref="F:System.Double.NaN" />, or <see cref="F:System.Double.NegativeInfinity" />, or <see cref="F:System.Double.PositiveInfinity" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.Equals(System.Object)">
+            <summary>Indicates whether the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> is equal to the specified object.</summary>
+            <param name="obj">The object to compare with the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</param>
+            <returns><see langword="true" /> if the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> is equal to the specified object; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.Equals(Anemonis.JsonRpc.JsonRpcId)">
+            <summary>Indicates whether the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> is equal to another <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</summary>
+            <param name="other">A <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> to compare with the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</param>
+            <returns><see langword="true" /> if the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> is equal to the other <see cref="T:Anemonis.JsonRpc.JsonRpcId" />; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.GetHashCode">
+            <summary>Returns the hash code for the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</summary>
+            <returns>A 32-bit signed integer hash code.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.ToString">
+            <summary>Converts the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> to its equivalent string representation.</summary>
+            <returns>The string representation of the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.ToString(System.IFormatProvider)">
+            <summary>Converts the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> to its equivalent string representation.</summary>
+            <param name="provider">An <see cref="T:System.IFormatProvider" /> that supplies culture-specific formatting information.</param>
+            <returns>The string representation of the current <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.FromString(System.String)">
+            <summary>Performs an implicit conversion from <see cref="T:System.String" /> to <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</summary>
+            <param name="value">The value to create a <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> from.</param>
+            <returns>A new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> structure.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.FromInt64(System.Int64)">
+            <summary>Performs an implicit conversion from <see cref="T:System.UInt64" /> to <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</summary>
+            <param name="value">The value to create a <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> from.</param>
+            <returns>A new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> structure.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.FromDouble(System.Double)">
+            <summary>Performs an implicit conversion from <see cref="T:System.Double" /> to <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</summary>
+            <param name="value">The value to create a <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> from.</param>
+            <returns>A new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> structure.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.ToString(Anemonis.JsonRpc.JsonRpcId@)">
+            <summary>Performs an implicit conversion from <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> to <see cref="T:System.String" />.</summary>
+            <param name="value">The identifier to get a <see cref="T:System.String" /> value from.</param>
+            <returns>An underlying value of type <see cref="T:System.String" />.</returns>
+            <exception cref="T:System.InvalidCastException">The underlying value is not of type <see cref="T:System.String" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.ToInt64(Anemonis.JsonRpc.JsonRpcId@)">
+            <summary>Performs an implicit conversion from <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> to <see cref="T:System.Int64" />.</summary>
+            <param name="value">The identifier to get a <see cref="T:System.Int64" /> value from.</param>
+            <returns>An underlying value of type <see cref="T:System.Int64" />.</returns>
+            <exception cref="T:System.InvalidCastException">The underlying value is not of type <see cref="T:System.Int64" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.ToDouble(Anemonis.JsonRpc.JsonRpcId@)">
+            <summary>Performs an implicit conversion from <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> to <see cref="T:System.Double" />.</summary>
+            <param name="value">The identifier to get a <see cref="T:System.Double" /> value from.</param>
+            <returns>An underlying value of type <see cref="T:System.Double" />.</returns>
+            <exception cref="T:System.InvalidCastException">The underlying value is not of type <see cref="T:System.Double" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.op_Equality(Anemonis.JsonRpc.JsonRpcId@,Anemonis.JsonRpc.JsonRpcId@)">
+            <summary>Indicates whether the left <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> is equal to the right <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</summary>
+            <param name="obj1">The left <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> operand.</param>
+            <param name="obj2">The right <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> operand.</param>
+            <returns><see langword="true" /> if the left <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> is equal to the right <see cref="T:Anemonis.JsonRpc.JsonRpcId" />; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.op_Inequality(Anemonis.JsonRpc.JsonRpcId@,Anemonis.JsonRpc.JsonRpcId@)">
+            <summary>Indicates whether the left <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> is not equal to the right <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</summary>
+            <param name="obj1">The left <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> operand.</param>
+            <param name="obj2">The right <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> operand.</param>
+            <returns><see langword="true" /> if the left <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> is not equal to the right <see cref="T:Anemonis.JsonRpc.JsonRpcId" />; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.op_Implicit(System.String)~Anemonis.JsonRpc.JsonRpcId">
+            <summary>Performs an implicit conversion from <see cref="T:System.String" /> to <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</summary>
+            <param name="value">The value to create a <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> from.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.op_Implicit(System.Int64)~Anemonis.JsonRpc.JsonRpcId">
+            <summary>Performs an implicit conversion from <see cref="T:System.UInt64" /> to <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</summary>
+            <param name="value">The value to create a <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> from.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.op_Implicit(System.Double)~Anemonis.JsonRpc.JsonRpcId">
+            <summary>Performs an implicit conversion from <see cref="T:System.Double" /> to <see cref="T:Anemonis.JsonRpc.JsonRpcId" />.</summary>
+            <param name="value">The value to create a <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> from.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.op_Explicit(Anemonis.JsonRpc.JsonRpcId@)~System.String">
+            <summary>Performs an implicit conversion from <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> to <see cref="T:System.String" />.</summary>
+            <param name="value">The identifier to get a <see cref="T:System.String" /> value from.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.op_Explicit(Anemonis.JsonRpc.JsonRpcId@)~System.Int64">
+            <summary>Performs an implicit conversion from <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> to <see cref="T:System.Int64" />.</summary>
+            <param name="value">The identifier to get a <see cref="T:System.Int64" /> value from.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcId.op_Explicit(Anemonis.JsonRpc.JsonRpcId@)~System.Double">
+            <summary>Performs an implicit conversion from <see cref="T:Anemonis.JsonRpc.JsonRpcId" /> to <see cref="T:System.Double" />.</summary>
+            <param name="value">The identifier to get a <see cref="T:System.Double" /> value from.</param>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcId.Type">
+            <summary>Gets the JSON-RPC message identifier type.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcIdType">
+            <summary>Represents JSON-RPC message identifier type.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcIdType.None">
+            <summary>Undefined JSON-RPC message identifier.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcIdType.String">
+            <summary>JSON-RPC message identifier of string type.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcIdType.Integer">
+            <summary>JSON-RPC message identifier of integer type.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcIdType.Float">
+            <summary>JSON-RPC message identifier of float type.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcMessage">
+            <summary>Represents a JSON-RPC message.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcMessage.Id">
+            <summary>Gets the JSON-RPC message identifier.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcMessageContract">
+            <summary>Represents a type contract for JSON-RPC message deserialization.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1">
+            <summary>Represents a JSON-RPC message deserialization result.</summary>
+            <typeparam name="T">The type of the JSON-RPC message.</typeparam>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcMessageInfo`1.Equals(System.Object)">
+            <summary>Indicates whether the current <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> is equal to the specified object.</summary>
+            <param name="obj">The object to compare with the current <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" />.</param>
+            <returns><see langword="true" /> if the current <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> is equal to the specified object; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcMessageInfo`1.Equals(Anemonis.JsonRpc.JsonRpcMessageInfo{`0})">
+            <summary>Indicates whether the current <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> is equal to another <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" />.</summary>
+            <param name="other">A <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> to compare with the current <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" />.</param>
+            <returns><see langword="true" /> if the current <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> is equal to the other <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" />; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcMessageInfo`1.GetHashCode">
+            <summary>Returns the hash code for the current <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" />.</summary>
+            <returns>A 32-bit signed integer hash code.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcMessageInfo`1.op_Equality(Anemonis.JsonRpc.JsonRpcMessageInfo{`0},Anemonis.JsonRpc.JsonRpcMessageInfo{`0})">
+            <summary>Indicates whether the left <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> is equal to the right <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" />.</summary>
+            <param name="obj1">The left <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> operand.</param>
+            <param name="obj2">The right <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> operand.</param>
+            <returns><see langword="true" /> if the left <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> is equal to the right <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" />; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcMessageInfo`1.op_Inequality(Anemonis.JsonRpc.JsonRpcMessageInfo{`0},Anemonis.JsonRpc.JsonRpcMessageInfo{`0})">
+            <summary>Indicates whether the left <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> is not equal to the right <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" />.</summary>
+            <param name="obj1">The left <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> operand.</param>
+            <param name="obj2">The right <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> operand.</param>
+            <returns><see langword="true" /> if the left <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" /> is not equal to the right <see cref="T:Anemonis.JsonRpc.JsonRpcMessageInfo`1" />; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcMessageInfo`1.Message">
+            <summary>Gets a JSON-RPC message for successful deserialization.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcMessageInfo`1.Exception">
+            <summary>Gets an exception for unsuccessful deserialization.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcMessageInfo`1.IsValid">
+            <summary>Gets a value indicating whether the deserialization was successful.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcParametersType">
+            <summary>Represents JSON-RPC method parameters type.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcParametersType.None">
+            <summary>JSON-RPC method parameters are not provided.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcParametersType.ByPosition">
+            <summary>JSON-RPC method parameters are provided by position.</summary>
+        </member>
+        <member name="F:Anemonis.JsonRpc.JsonRpcParametersType.ByName">
+            <summary>JSON-RPC method parameters are provided by name.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcProtocol">
+            <summary>Defines JSON-RPC protocol auxiliary methods.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcProtocol.IsSystemMethod(System.String)">
+            <summary>Checks whether the JSON-RPC method is a JSON-RPC system extension method.</summary>
+            <param name="method">The name of a JSON-RPC method.</param>
+            <returns><see langword="true" /> if the specified JSON-RPC method is a JSON-RPC system extension method; otherwise, <see langword="false" />.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcProtocol.IsSystemErrorCode(System.Int64)">
+            <summary>Checks whether the JSON-RPC error code is in range of JSON-RPC system error codes.</summary>
+            <param name="code">The JSON-RPC error code.</param>
+            <returns><see langword="true" /> if the specified JSON-RPC error code is in range of JSON-RPC system error codes; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcProtocol.IsServerErrorCode(System.Int64)">
+            <summary>Checks whether the JSON-RPC error code is in range of JSON-RPC server error codes.</summary>
+            <param name="code">The JSON-RPC error code.</param>
+            <returns><see langword="true" /> if the specified JSON-RPC error code is in range of JSON-RPC server error codes; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcProtocol.IsStandardErrorCode(System.Int64)">
+            <summary>Checks whether the JSON-RPC error code is one of the standard JSON-RPC system error codes.</summary>
+            <param name="code">The JSON-RPC error code.</param>
+            <returns><see langword="true" /> if the specified JSON-RPC error code is one of the standard JSON-RPC system error codes; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcRequest">
+            <summary>Represents a JSON-RPC request message.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcRequest.#ctor(Anemonis.JsonRpc.JsonRpcId@,System.String)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcRequest" /> class.</summary>
+            <param name="id">The identifier established by the client.</param>
+            <param name="method">The string containing the name of the JSON-RPC method to be invoked.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcRequest.#ctor(Anemonis.JsonRpc.JsonRpcId@,System.String,System.Collections.Generic.IReadOnlyList{System.Object})">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcRequest" /> class.</summary>
+            <param name="id">The identifier established by the client.</param>
+            <param name="method">The string containing the name of the JSON-RPC method to be invoked.</param>
+            <param name="parameters">The parameters to be used during the invocation of the JSON-RPC method, provided by position.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> or <paramref name="parameters" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcRequest.#ctor(Anemonis.JsonRpc.JsonRpcId@,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcRequest" /> class.</summary>
+            <param name="id">The identifier established by the client.</param>
+            <param name="method">The string containing the name of the JSON-RPC method to be invoked.</param>
+            <param name="parameters">The parameters to be used during the invocation of the JSON-RPC method, provided by name.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="method" /> or <paramref name="parameters" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcRequest.Method">
+            <summary>Gets a string containing the name of the JSON-RPC method to be invoked.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcRequest.ParametersType">
+            <summary>Gets the JSON-RPC method parameters type.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcRequest.ParametersByName">
+            <summary>Gets the JSON-RPC method parameters, provided by name.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcRequest.ParametersByPosition">
+            <summary>Gets the JSON-RPC method parameters, provided by position.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcRequest.IsNotification">
+            <summary>Gets a value indicating whether the JSON-RPC request is a notification.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcRequest.IsSystem">
+            <summary>Gets a value indicating whether the JSON-RPC request is a system extension request.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcRequestContract">
+            <summary>Represents a type contract for JSON-RPC request deserialization.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcRequestContract.#ctor">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcRequestContract" /> class.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcRequestContract.#ctor(System.Collections.Generic.IReadOnlyList{System.Type})">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcRequestContract" /> class.</summary>
+            <param name="parameters">The contract for parameters, provided by position.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="parameters" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcRequestContract.#ctor(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Type})">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcRequestContract" /> class.</summary>
+            <param name="parameters">The contract for parameters, provided by name.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="parameters" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcRequestContract.ParametersType">
+            <summary>Gets the JSON-RPC method parameters type.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcRequestContract.ParametersByName">
+            <summary>Gets the types of JSON-RPC method parameters, provided by name.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcRequestContract.ParametersByPosition">
+            <summary>Gets the types of JSON-RPC method parameters, provided by position.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcResponse">
+            <summary>Represents a JSON-RPC response message.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcResponse.#ctor(Anemonis.JsonRpc.JsonRpcId@,System.Object)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcResponse" /> class.</summary>
+            <param name="id">The identifier, which must be the same as the identifier in the JSON-RPC request.</param>
+            <param name="result">The produced result for successful request.</param>
+            <exception cref="T:System.ArgumentException"><paramref name="id" /> has undefined value.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcResponse.#ctor(Anemonis.JsonRpc.JsonRpcId@,Anemonis.JsonRpc.JsonRpcError)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcResponse" /> class.</summary>
+            <param name="id">The identifier, which must be the same as the identifier in the JSON-RPC request.</param>
+            <param name="error">The produced JSON-RPC error for unsuccessful request.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="error" /> is <see langword="null" />.</exception>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcResponse.Result">
+            <summary>Gets the produced result for successful request.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcResponse.Error">
+            <summary>Gets the produced JSON-RPC error for unsuccessful request.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcResponse.Success">
+            <summary>Gets a value indicating whether the request was successful.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcResponseContract">
+            <summary>Represents a type contract for JSON-RPC response deserialization.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcResponseContract.#ctor(System.Type)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcResponseContract" /> class.</summary>
+            <param name="resultType">The type of method result.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcResponseContract.#ctor(System.Type,System.Type)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcResponseContract" /> class.</summary>
+            <param name="resultType">The type of method result.</param>
+            <param name="errorDataType">The type of JSON-RPC error optional data.</param>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcResponseContract.ResultType">
+            <summary>Gets a type of method result.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcResponseContract.ErrorDataType">
+            <summary>Gets a type of JSON-RPC error optional data.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcSerializationException">
+            <summary>Represents an error that occurs during JSON-RPC message serialization or deserialization.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcSerializationException.MessageId">
+            <summary>Gets the identifier of the related JSON-RPC message.</summary>
+        </member>
+        <member name="P:Anemonis.JsonRpc.JsonRpcSerializationException.ErrorCode">
+            <summary>Gets the corresponding JSON-RPC error code.</summary>
+        </member>
+        <member name="T:Anemonis.JsonRpc.JsonRpcSerializer">
+            <summary>Serializes and deserializes JSON-RPC messages into and from the JSON format.</summary>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.#ctor(Anemonis.JsonRpc.IJsonRpcContractResolver,Newtonsoft.Json.JsonSerializer,Anemonis.JsonRpc.JsonRpcCompatibilityLevel)">
+            <summary>Initializes a new instance of the <see cref="T:Anemonis.JsonRpc.JsonRpcSerializer" /> class.</summary>
+            <param name="contractResolver">The JSON-RPC message contract resolver instance.</param>
+            <param name="jsonSerializer">The JSON serializer instance.</param>
+            <param name="compatibilityLevel">The JSON-RPC protocol compatibility level.</param>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeRequestData(System.String)">
+            <summary>Deserializes the specified JSON string to JSON-RPC request data.</summary>
+            <param name="input">The JSON string to deserialize.</param>
+            <returns>A JSON-RPC request data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeRequestData(System.IO.Stream)">
+            <summary>Deserializes a UTF-8 encoded JSON string from the specified stream to JSON-RPC request data.</summary>
+            <param name="input">The stream to deserialize from.</param>
+            <returns>A JSON-RPC request data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeRequestData(System.IO.TextReader)">
+            <summary>Deserializes a JSON string using the specified reader to JSON-RPC request data.</summary>
+            <param name="input">The reader to use for deserializing.</param>
+            <returns>A JSON-RPC request data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeRequestDataAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Deserializes the specified JSON string to JSON-RPC request data as an asynchronous operation.</summary>
+            <param name="input">The JSON string to deserialize.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON-RPC request data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeRequestDataAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Deserializes a UTF-8 encoded JSON string from the specified stream to JSON-RPC request data as an asynchronous operation.</summary>
+            <param name="input">The stream to deserialize from.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON-RPC request data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeRequestDataAsync(System.IO.TextReader,System.Threading.CancellationToken)">
+            <summary>Deserializes a JSON string using the specified reader to JSON-RPC request data as an asynchronous operation.</summary>
+            <param name="input">The reader to use for deserializing.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON-RPC request data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeResponseData(System.String)">
+            <summary>Deserializes the specified JSON string to JSON-RPC response data.</summary>
+            <param name="input">The JSON string to deserialize.</param>
+            <returns>A JSON-RPC response data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeResponseData(System.IO.Stream)">
+            <summary>Deserializes a UTF-8 encoded JSON string from the specified stream to JSON-RPC response data.</summary>
+            <param name="input">The stream to deserialize from.</param>
+            <returns>A JSON-RPC response data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeResponseData(System.IO.TextReader)">
+            <summary>Deserializes a JSON string using the specified reader to JSON-RPC response data.</summary>
+            <param name="input">The reader to use for deserializing.</param>
+            <returns>A JSON-RPC response data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeResponseDataAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Deserializes the specified JSON string to JSON-RPC response data as an asynchronous operation.</summary>
+            <param name="input">The JSON string to deserialize.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON-RPC response data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeResponseDataAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Deserializes a UTF-8 encoded JSON string from the specified stream to JSON-RPC response data as an asynchronous operation.</summary>
+            <param name="input">The stream to deserialize from.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON-RPC response data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.DeserializeResponseDataAsync(System.IO.TextReader,System.Threading.CancellationToken)">
+            <summary>Deserializes a JSON string using the specified reader to JSON-RPC response data as an asynchronous operation.</summary>
+            <param name="input">The reader to use for deserializing.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON-RPC response data deserialization result.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON deserialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC deserialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequest(Anemonis.JsonRpc.JsonRpcRequest)">
+            <summary>Serializes the specified JSON-RPC request to a JSON string.</summary>
+            <param name="request">The JSON-RPC request to serialize.</param>
+            <returns>A JSON string representation of the specified request.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="request" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequest(Anemonis.JsonRpc.JsonRpcRequest,System.IO.Stream)">
+            <summary>Serializes the specified JSON-RPC request as a UTF-8 encoded JSON string to the specified stream.</summary>
+            <param name="request">The JSON-RPC request to serialize.</param>
+            <param name="output">The stream to deserialize to.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="request" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequest(Anemonis.JsonRpc.JsonRpcRequest,System.IO.TextWriter)">
+            <summary>Serializes the specified JSON-RPC request as a JSON string using the specified writer.</summary>
+            <param name="request">The JSON-RPC request to serialize.</param>
+            <param name="output">The writer to use for deserializing.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="request" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequestAsync(Anemonis.JsonRpc.JsonRpcRequest,System.Threading.CancellationToken)">
+            <summary>Serializes the specified JSON-RPC request to a JSON string as an asynchronous operation.</summary>
+            <param name="request">The JSON-RPC request to serialize.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON string representation of the specified request.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="request" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequestAsync(Anemonis.JsonRpc.JsonRpcRequest,System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Serializes the specified JSON-RPC request as a UTF-8 encoded JSON string to the specified stream as an asynchronous operation.</summary>
+            <param name="request">The JSON-RPC request to serialize.</param>
+            <param name="output">The stream to deserialize to.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="request" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequestAsync(Anemonis.JsonRpc.JsonRpcRequest,System.IO.TextWriter,System.Threading.CancellationToken)">
+            <summary>Serializes the specified JSON-RPC request as a JSON string using the specified writer as an asynchronous operation.</summary>
+            <param name="request">The JSON-RPC request to serialize.</param>
+            <param name="output">The writer to use for deserializing.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="request" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequests(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcRequest})">
+            <summary>Serializes the specified collection of JSON-RPC requests to a JSON string.</summary>
+            <param name="requests">The collection of JSON-RPC requests to serialize.</param>
+            <returns>A JSON string representation of the specified collection of JSON-RPC requests.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="requests" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequests(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcRequest},System.IO.Stream)">
+            <summary>Serializes the specified collection of JSON-RPC requests as a UTF-8 encoded JSON string to the specified stream.</summary>
+            <param name="requests">The collection of JSON-RPC requests to serialize.</param>
+            <param name="output">The stream to deserialize to.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="requests" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequests(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcRequest},System.IO.TextWriter)">
+            <summary>Serializes the specified collection of JSON-RPC requests as a JSON string using the specified writer.</summary>
+            <param name="requests">The collection of JSON-RPC requests to serialize.</param>
+            <param name="output">The writer for deserializing.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="requests" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequestsAsync(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcRequest},System.Threading.CancellationToken)">
+            <summary>Serializes the specified collection of JSON-RPC requests to a JSON string as an asynchronous operation.</summary>
+            <param name="requests">The collection of JSON-RPC requests to serialize.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON string representation of the specified collection of JSON-RPC requests.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="requests" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequestsAsync(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcRequest},System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Serializes the specified collection of JSON-RPC requests as a UTF-8 encoded JSON string to the specified stream as an asynchronous operation.</summary>
+            <param name="requests">The collection of JSON-RPC requests to serialize.</param>
+            <param name="output">The stream to deserialize to.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="requests" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeRequestsAsync(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcRequest},System.IO.TextWriter,System.Threading.CancellationToken)">
+            <summary>Serializes the specified collection of JSON-RPC requests as a JSON string using the specified writer as an asynchronous operation.</summary>
+            <param name="requests">The collection of JSON-RPC requests to serialize.</param>
+            <param name="output">The writer for deserializing.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="requests" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponse(Anemonis.JsonRpc.JsonRpcResponse)">
+            <summary>Serializes the specified JSON-RPC response to a JSON string.</summary>
+            <param name="response">The JSON-RPC response to serialize.</param>
+            <returns>A JSON string representation of the specified response.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="response" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponse(Anemonis.JsonRpc.JsonRpcResponse,System.IO.Stream)">
+            <summary>Serializes the specified JSON-RPC response as a UTF-8 encoded JSON string to the specified stream.</summary>
+            <param name="response">The JSON-RPC response to serialize.</param>
+            <param name="output">The stream to deserialize to.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="response" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponse(Anemonis.JsonRpc.JsonRpcResponse,System.IO.TextWriter)">
+            <summary>Serializes the specified JSON-RPC response as a JSON string using the specified writer.</summary>
+            <param name="response">The JSON-RPC response to serialize.</param>
+            <param name="output">The writer for deserializing.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="response" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponseAsync(Anemonis.JsonRpc.JsonRpcResponse,System.Threading.CancellationToken)">
+            <summary>Serializes the specified JSON-RPC response to a JSON string as an asynchronous operation.</summary>
+            <param name="response">The JSON-RPC response to serialize.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON string representation of the specified response.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="response" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponseAsync(Anemonis.JsonRpc.JsonRpcResponse,System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Serializes the specified JSON-RPC response as a UTF-8 encoded JSON string to the specified stream as an asynchronous operation.</summary>
+            <param name="response">The JSON-RPC response to serialize.</param>
+            <param name="output">The stream to deserialize to.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="response" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponseAsync(Anemonis.JsonRpc.JsonRpcResponse,System.IO.TextWriter,System.Threading.CancellationToken)">
+            <summary>Serializes the specified JSON-RPC response as a JSON string using the specified writer as an asynchronous operation.</summary>
+            <param name="response">The JSON-RPC response to serialize.</param>
+            <param name="output">The writer for deserializing.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="response" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponses(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcResponse})">
+            <summary>Serializes the specified collection of JSON-RPC responses to a JSON string.</summary>
+            <param name="responses">The collection of JSON-RPC responses to serialize.</param>
+            <returns>A JSON string representation of the specified collection of JSON-RPC responses.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="responses" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponses(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcResponse},System.IO.Stream)">
+            <summary>Serializes the specified collection of JSON-RPC responses as a UTF-8 encoded JSON string to the specified stream.</summary>
+            <param name="responses">The collection of JSON-RPC responses to serialize.</param>
+            <param name="output">The stream to deserialize to.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="responses" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponses(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcResponse},System.IO.TextWriter)">
+            <summary>Serializes the specified collection of JSON-RPC responses as a JSON string using the specified writer.</summary>
+            <param name="responses">The collection of JSON-RPC responses to serialize.</param>
+            <param name="output">The writer for deserializing.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="responses" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponsesAsync(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcResponse},System.Threading.CancellationToken)">
+            <summary>Serializes the specified collection of JSON-RPC responses to a JSON string as an asynchronous operation.</summary>
+            <param name="responses">The collection of JSON-RPC responses to serialize.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation. The task result is a JSON string representation of the specified collection of JSON-RPC responses.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="responses" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponsesAsync(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcResponse},System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Serializes the specified collection of JSON-RPC responses as a UTF-8 encoded JSON string to the specified stream as an asynchronous operation.</summary>
+            <param name="responses">The collection of JSON-RPC responses to serialize.</param>
+            <param name="output">The stream to deserialize to.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="responses" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+        <member name="M:Anemonis.JsonRpc.JsonRpcSerializer.SerializeResponsesAsync(System.Collections.Generic.IReadOnlyList{Anemonis.JsonRpc.JsonRpcResponse},System.IO.TextWriter,System.Threading.CancellationToken)">
+            <summary>Serializes the specified collection of JSON-RPC responses as a JSON string using the specified writer as an asynchronous operation.</summary>
+            <param name="responses">The collection of JSON-RPC responses to serialize.</param>
+            <param name="output">The writer for deserializing.</param>
+            <param name="cancellationToken">The cancellation token for canceling the operation.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="responses" /> or <paramref name="output" /> is <see langword="null" />.</exception>
+            <exception cref="T:Newtonsoft.Json.JsonException">An error occurred during JSON serialization.</exception>
+            <exception cref="T:Anemonis.JsonRpc.JsonRpcSerializationException">An error occurred during JSON-RPC serialization.</exception>
+            <exception cref="T:System.OperationCanceledException">The operation was canceled.</exception>
+        </member>
+    </members>
+</doc>
