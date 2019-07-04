@@ -50,14 +50,15 @@ class CLRInfo():
             yield key, getattr(self, key)
 
 # Helper functions :)
-def remove_all_event_handlers(declaring_object, event_name):
+def remove_all_event_handlers(declaring_object, event_name, field_name=None):
     """
     Removes all event handlers of an event on its declaring object
     """
+    field_name = field_name or event_name
     flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
     typ = declaring_object.GetType()
     evt = typ.GetEvent(event_name)
-    field = typ.GetField(event_name, flags) or typ.GetField('m_' + event_name,
+    field = typ.GetField(field_name, flags) or typ.GetField('m_' + field_name,
                                                             flags)
     value = field.GetValue(declaring_object)
     if value:
