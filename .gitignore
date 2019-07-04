@@ -21,7 +21,8 @@ __pycache__
 .ipynb_checkpoints
 
 # SLHStudio
-SLHStudio/img_cache
+SLHStudio/img_cache/*
+!SLHStudio/img_cache/.gitinclude
 SLHStudio/config.json
 
 # OpenMetaverse/LibreMetaverse
