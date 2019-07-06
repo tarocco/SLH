@@ -64,3 +64,14 @@ def remove_all_event_handlers(declaring_object, event_name, field_name=None):
     if value:
         for delegate in value.GetInvocationList():
             evt.RemoveEventHandler(declaring_object, delegate)
+
+def event_handler(namespace, event):
+    def wrap(handler):
+        nonlocal event
+        handler_name = handler.__name__
+        existing_handler = getattr(namespace, handler_name, None)
+        if existing_handler:
+            event -= existing_handler
+        event += handler
+        setattr(namespace, handler.__name__, handler)
+    return wrap
