@@ -2,6 +2,7 @@
 using KdTree.Math;
 using OpenMetaverse;
 using OpenMetaverse.Assets;
+using OpenMetaverse.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -300,8 +301,7 @@ namespace LibSLH
             Image image = null;
             if (download != null)
             {
-                //OpenJPEG.DecodeToImage(download.AssetData, out managed_image, out image);
-                image = CSJ2K.J2kImage.FromBytes(download.AssetData).As<Image>();
+                OpenJPEG.DecodeToImage(download.AssetData, out var managed_image, out image);
             }
             else
             {
@@ -312,8 +312,7 @@ namespace LibSLH
                     {
                         if (state == TextureRequestState.Finished)
                         {
-                            //OpenJPEG.DecodeToImage(asset.AssetData, out managed_image, out image);
-                            image = CSJ2K.J2kImage.FromBytes(asset.AssetData).As<Image>();
+                            OpenJPEG.DecodeToImage(asset.AssetData, out var managed_image, out image);
                             reset.Set();
                         }
                     }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2042
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29318.209
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreMetaverse", "libremetaverse\LibreMetaverse\LibreMetaverse.csproj", "{27C70F3A-0000-0000-0000-000000000000}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreMetaverse.Types", "libremetaverse\LibreMetaverseTypes\LibreMetaverse.Types.csproj", "{B37B02AD-0000-0000-0000-000000000000}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibreMetaverse.Utilities", "libremetaverse\LibreMetaverse.Utilities\LibreMetaverse.Utilities.csproj", "{1266CE08-0000-0000-0000-000000000000}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSJ2K", "libremetaverse\CSJ2K\CSJ2K.csproj", "{C276743B-0000-0000-0000-000000000000}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibSLH", "LibSLH\LibSLH.csproj", "{DE84FDFB-FE4E-4771-98D8-335BF787447D}"
 EndProject
@@ -55,14 +53,6 @@ Global
 		{1266CE08-0000-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1266CE08-0000-0000-0000-000000000000}.Release|x64.ActiveCfg = Release|Any CPU
 		{1266CE08-0000-0000-0000-000000000000}.Release|x64.Build.0 = Release|Any CPU
-		{C276743B-0000-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C276743B-0000-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C276743B-0000-0000-0000-000000000000}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C276743B-0000-0000-0000-000000000000}.Debug|x64.Build.0 = Debug|Any CPU
-		{C276743B-0000-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C276743B-0000-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C276743B-0000-0000-0000-000000000000}.Release|x64.ActiveCfg = Release|Any CPU
-		{C276743B-0000-0000-0000-000000000000}.Release|x64.Build.0 = Release|Any CPU
 		{DE84FDFB-FE4E-4771-98D8-335BF787447D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DE84FDFB-FE4E-4771-98D8-335BF787447D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE84FDFB-FE4E-4771-98D8-335BF787447D}.Debug|x64.ActiveCfg = Debug|Any CPU
