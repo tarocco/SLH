@@ -20,26 +20,48 @@ class Client(SLHClient):
 
     def __init__(self):
         super().__init__()
-        self._update_coro = None
-        self._event_loop = None
+        self._coroutines = dict()
+        self._event_loop = asyncio.get_event_loop()
+        self._coroutines_ready = False
 
-    async def update(self):
-        await asyncio.sleep(1)  # Monkey-patch ready
-
-    async def _call_update(self):
-        while self.Network.Connected:
-            await self.update()
+    async def _coroutine_wrapper(self, method):
+        coro_method = method(self)
+        while True:
+            #print(f"self._coroutines_ready == {self._coroutines_ready}")
+            if self._coroutines_ready:
+                try:
+                    await next(coro_method)
+                except asyncio.CancelledError as cancelled:
+                    raise cancelled
+                except Exception as e:
+                    print(e)
+            else:
+                await asyncio.sleep(1);
 
     def _handle_login_progress(self, sender, args):
         if args.Status == LoginStatus.Success:
             self._on_login_success()
 
     def _on_login_success(self):
-        self._update_coro = asyncio.run_coroutine_threadsafe(
-            self._call_update(), self._event_loop)
+        self._coroutines_ready = True
+        pass
 
     def _handle_logged_out(self, sender, args):
-        self._update_coro.cancel()
+        self._coroutines_ready = False
+        pass
+
+    def start_coroutine(self, method, key=None):
+        if not key:
+            key = id(method)
+        if key in self._coroutines:
+            self.stop_coroutine(key)
+        coroutine = asyncio.run_coroutine_threadsafe(
+            self._coroutine_wrapper(method), self._event_loop)
+        self._coroutines[key] = coroutine
+
+    def stop_coroutine(self, key):
+        self._coroutines[key].cancel()
+        del self._coroutines[key]
 
     @classmethod
     def load_config(cls, path='config.json'):
@@ -49,7 +71,6 @@ class Client(SLHClient):
     def start(self, config=None):
         if not config:
             config = self.load_config()
-        self._event_loop = asyncio.get_event_loop()
         login_params = self.Network.DefaultLoginParams(
             config.FirstName, config.LastName, config.Password, self.PRODUCT,
             self.VERSION)
